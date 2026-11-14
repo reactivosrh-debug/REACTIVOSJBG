@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard de Cartera 30-60-90</title>
+<style>
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --ink:#1d2433; --ink2:#4a5468; --muted:#7a8396;
+  --line:#e3e6ec; --grid:#eef0f4; --accent:#2457c5;
+  --b0:#2e9e5b; --b1:#9bbf3b; --b2:#e3b21f; --b3:#e5772d; --b4:#c8312c;
+  --ok:#1f8a4c; --ok-bg:#e8f6ee; --warn:#b26a00; --warn-bg:#fff4e0; --bad:#b4231f; --bad-bg:#fdeceb;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer}
+button:hover,.btn:hover{border-color:#b9c0cc}
+button.primary,.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:999px;background:var(--ok-bg);color:var(--ok);font-weight:600}
+.badge.bad{background:var(--bad-bg);color:var(--bad)}
+main{padding:18px 24px 40px;max-width:1500px;margin:0 auto}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:16px}
+.filters label{display:flex;flex-direction:column;font-size:11.5px;color:var(--muted);gap:4px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.filters select,.filters input[type=text],.filters input[type=number]{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);min-width:150px;text-transform:none;letter-spacing:0}
+.filters .chk{flex-direction:row;align-items:center;gap:6px;text-transform:none;font-size:13px;color:var(--ink2);font-weight:500;letter-spacing:0;padding-bottom:7px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-left:auto}
+.chip{background:#eaf0fb;color:var(--accent);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer}
+.chip:hover{background:#dbe5f8}
+details.tol{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px}
+details.tol summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--ink2)}
+.tolgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:10px}
+.tolgrid label{font-size:12px;color:var(--ink2);display:flex;flex-direction:column;gap:4px}
+.tolgrid input{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:7px;width:100%}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:flex;flex-direction:column;gap:3px;min-height:118px}
+.kpi .lbl{font-size:12px;color:var(--ink2);font-weight:600}
+.kpi .val{font-size:26px;font-weight:700;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .det{font-size:12px;color:var(--muted)}
+.kpi .st{margin-top:auto;font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:5px}
+.kpi.ok{border-left-color:var(--ok);background:linear-gradient(0deg,var(--ok-bg),#fff 70%)} .kpi.ok .st{color:var(--ok)}
+.kpi.warn{border-left-color:var(--warn);background:linear-gradient(0deg,var(--warn-bg),#fff 70%)} .kpi.warn .st{color:var(--warn)}
+.kpi.bad{border-left-color:var(--bad);background:linear-gradient(0deg,var(--bad-bg),#fff 70%)} .kpi.bad .st{color:var(--bad)}
+.kpi.neutral{border-left-color:var(--accent)} .kpi.neutral .st{color:var(--muted);font-weight:600}
+.row{display:grid;gap:16px;margin-bottom:16px}
+.r2{grid-template-columns:1fr 1fr}
+.r2b{grid-template-columns:5fr 7fr}
+@media(max-width:1000px){.r2,.r2b{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;min-width:0}
+.card h2{font-size:14.5px;margin:0 0 2px}
+.card .hint{font-size:12px;color:var(--muted);margin-bottom:10px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:inherit;fill:var(--ink2);font-size:11.5px}
+.chart .axis{stroke:#c9ced8;stroke-width:1}
+.chart .gridl{stroke:var(--grid);stroke-width:1}
+.chart .clk{cursor:pointer}
+.chart .clk:hover{opacity:.85}
+.chart .dim{opacity:.28}
+.insight{font-size:12.5px;color:var(--ink2);background:#f7f8fa;border-radius:8px;padding:8px 10px;margin-top:10px}
+.insight b{color:var(--ink)}
+#tip{position:fixed;pointer-events:none;background:#1d2433;color:#fff;font-size:12px;padding:8px 10px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:50;display:none;max-width:320px;line-height:1.45}
+#tip b{font-weight:600}
+.tblwrap{max-height:540px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{position:sticky;top:0;background:#f7f8fa;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:11.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em;cursor:pointer;white-space:nowrap;user-select:none}
+th.num,td.num{text-align:right}
+td{padding:6px 10px;border-bottom:1px solid var(--grid);white-space:nowrap;font-variant-numeric:tabular-nums}
+td.cli{white-space:normal;min-width:220px}
+tbody tr:hover{background:#fafbfc}
+tfoot td{position:sticky;bottom:0;background:#f7f8fa;font-weight:700;border-top:1px solid var(--line)}
+.dias{display:inline-block;min-width:54px;text-align:center;padding:2px 8px;border-radius:6px;font-weight:600}
+.d0{background:#e3f4ea;color:#17673a}.d1{background:#eef5dc;color:#4d6312}.d2{background:#fcf1cf;color:#7a5a00}.d3{background:#fde6d6;color:#8e3f0b}.d4{background:#f9dcdb;color:#8f1d1a}
+.tag{font-size:10.5px;font-weight:700;padding:2px 6px;border-radius:5px;background:#eef0f4;color:var(--ink2)}
+.tag.SI{background:#f3e8fd;color:#6b2fa8}.tag.NC{background:#e4f0fd;color:#1b5fa8}
+.tblbar{display:flex;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.tblbar input{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:7px;min-width:260px}
+.empty{color:var(--muted);font-size:13px;padding:30px 10px;text-align:center;border:1px dashed var(--line);border-radius:8px}
+footer{color:var(--muted);font-size:11.5px;text-align:center;padding:10px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="ttl">Estado de Cartera 30-60-90</h1>
+    <div class="sub" id="sub">Cargando…</div>
+  </div>
+  <div class="hbtns">
+    <span id="recon" class="badge" title="Comparación con la fila Total General del reporte"></span>
+    <label class="btn primary" for="file">Cargar CSV del mes</label>
+    <input type="file" id="file" accept=".csv,.txt" hidden>
+    <button id="exportCsv">Exportar tabla plana</button>
+  </div>
+</header>
+
+<main>
+  <section class="filters" aria-label="Filtros">
+    <label>Cliente<select id="fCliente"></select></label>
+    <label>Ciudad<select id="fCiudad"></select></label>
+    <label>Rango de edad<select id="fRango"></select></label>
+    <label>Tipo de documento<select id="fTipo">
+      <option value="">Todos</option><option value="FV">Facturas (FV)</option>
+      <option value="NC">Notas crédito (NCV)</option><option value="SI">Saldos iniciales (SI)</option></select></label>
+    <label class="chk"><input type="checkbox" id="fExSI"> Excluir saldos iniciales (SI)</label>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <details class="tol">
+    <summary>⚙ Tolerancias de los indicadores (las tarjetas cambian de verde a rojo al superarlas)</summary>
+    <div class="tolgrid" id="tolgrid"></div>
+  </details>
+
+  <section class="kpis" id="kpis" aria-label="Indicadores"></section>
+
+  <div class="row r2b">
+    <div class="card">
+      <h2>Cartera por edades</h2>
+      <div class="hint">Clic en una barra para filtrar todo el tablero por ese rango.</div>
+      <div class="chart" id="cAging"></div>
+      <div class="chart" id="cStack100" style="margin-top:14px"></div>
+    </div>
+    <div class="card">
+      <h2>Top 10 clientes por saldo</h2>
+      <div class="hint">Cada barra se divide por rango de edad. Clic en un cliente para filtrar.</div>
+      <div class="legend" id="lgTop"></div>
+      <div class="chart" id="cTop"></div>
+      <div class="insight" id="inTop"></div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <h2>Cartera por ciudad</h2>
+      <div class="hint">Ordenada de mayor a menor, dividida por rango de edad. Clic para filtrar.</div>
+      <div class="legend" id="lgCity"></div>
+      <div class="chart" id="cCity"></div>
+    </div>
+    <div class="card">
+      <h2>Vencimientos próximos (flujo de caja esperado)</h2>
+      <div class="hint">Cartera por vencer agrupada por semana según la fecha de vencimiento.</div>
+      <div class="chart" id="cFlow"></div>
+      <div class="insight" id="inFlow"></div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <h2>Concentración de la cartera (Pareto)</h2>
+      <div class="hint">Barras: participación de cada cliente. Línea: participación acumulada. Ambas en la misma escala (%).</div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>% del cliente</span><span><i style="background:var(--ink);height:3px"></i>% acumulado</span><span><i style="background:none;border-top:2px dashed var(--b4);height:0"></i>Línea del 80%</span></div>
+      <div class="chart" id="cPareto"></div>
+      <div class="insight" id="inPareto"></div>
+    </div>
+    <div class="card">
+      <h2>Evolución mensual</h2>
+      <div class="hint">Guarda los totales de cada corte. Con dos o más cortes aparece la tendencia de la cartera vencida y de más de 90 días.</div>
+      <div class="hbtns" style="margin-bottom:10px">
+        <button id="saveCut" class="primary">Guardar este corte</button>
+        <button id="expHist">Exportar histórico</button>
+        <label class="btn" for="impHist">Importar histórico</label><input type="file" id="impHist" accept=".json" hidden>
+        <button id="clrHist">Borrar histórico</button>
+      </div>
+      <div class="legend"><span><i style="background:var(--b3)"></i>Cartera vencida</span><span><i style="background:var(--b4)"></i>Más de 90 días</span><span><i style="background:var(--accent)"></i>Cartera total</span></div>
+      <div class="chart" id="cEvo"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Detalle de facturas</h2>
+    <div class="hint">Una fila por documento, sin filas de totales. Los días de mora se colorean según el rango. Clic en un encabezado para ordenar.</div>
+    <div class="tblbar">
+      <input type="text" id="q" placeholder="Buscar cliente, factura o ciudad…">
+      <span id="tblInfo" style="color:var(--muted);font-size:12.5px"></span>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr>
+          <th data-k="cliente">Cliente</th><th data-k="ciudad">Ciudad</th><th data-k="doc">Factura</th><th data-k="tipo">Tipo</th>
+          <th data-k="fecha">Fecha</th><th data-k="vence">Vence</th><th data-k="valor" class="num">Valor</th>
+          <th data-k="dias" class="num">Días mora</th><th data-k="bucket">Rango</th>
+        </tr></thead>
+        <tbody id="tb"></tbody>
+        <tfoot><tr><td colspan="6" id="tfL">Total</td><td class="num" id="tfV"></td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+</main>
+<footer>Prototipo de dashboard de cartera · Los cálculos se hacen en el navegador a partir del CSV del reporte 30-60-90.</footer>
+<div id="tip"></div>
+
+<!-- Datos del corte incluidos (se reemplazan al cargar un CSV nuevo) -->
+<script type="text/plain" id="csvData">;;;;;;;;;
+;REACTIVOS JBG SAS;;;;;;;;
+;NIT: 901405934 - 1;;;;;;;;
+;Estado de Cuenta 30-60-90;;;;;;;;
+;Cartera - Análisis por Edades con cierre al 31/10/2026;;;;;;;;
+;Valores en Peso Colombiano - COP;;;;;;;;
+;;;;;;;;;
+Fecha;Documento;Vence;Valor Total;Por Vencer;1 A 30;31 A 60;61 A 90;Más de 90;Días
+ALBERTO LUIS IBAÑEZ PEÑALOZA - CC: 73542932;;;;;;;;;
+Sucursal: Principal - Direccion: CL 92 42F 58 - Ciudad: Barranquilla - Telefono: 3013632439 - Email: indilac_ipal@hotmail.com;;;;;;;;;
+23/10/2026;FV JBGS 8023;24/10/2026;$ 985,100.00;$ 0.00;$ 985,100.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+Total Sucursal: Principal;;;$ 985,100.00;$ 0.00;$ 985,100.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ALBERTO LUIS IBAÑEZ PEÑALOZA;;;$ 985,100.00;$ 0.00;$ 985,100.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+ALDAMO SUPPLIES SAS - NIT: 901953451-6;;;;;;;;;
+Sucursal: Principal - Direccion: CL 79 B CR 42 E 323OF 403 - Ciudad: Barranquilla - Telefono: 3017371919 - Email: administrativo@aldamosupplies.com;;;;;;;;;
+28/06/2025;FV JBGS 3881;29/06/2025;$ 943,136.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 943,136.00;$ 489.00
+07/07/2025;FV JBGS 3956;08/07/2025;$ 400,967.72;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 400,967.72;$ 480.00
+08/07/2025;FV JBGS 3968;09/07/2025;$ 627,120.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 627,120.00;$ 479.00
+11/07/2025;FV JBGS 3998;12/07/2025;$ 1,249,482.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,249,482.50;$ 476.00
+16/07/2025;FV JBGS 4041;17/07/2025;$ 165,850.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 165,850.00;$ 471.00
+22/07/2025;FV JBGS 4087;23/07/2025;$ 1,296,185.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,296,185.00;$ 465.00
+26/07/2025;FV JBGS 4128;27/07/2025;$ 490,863.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 490,863.75;$ 461.00
+06/08/2025;FV JBGS 4218;06/09/2025;$ 362,450.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 362,450.00;$ 420.00
+08/08/2025;FV JBGS 4236;07/09/2025;$ 435,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 435,600.00;$ 419.00
+12/08/2025;FV JBGS 4261;11/09/2025;$ 321,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 321,800.00;$ 415.00
+27/08/2025;FV JBGS 4401;26/09/2025;$ 429,793.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 429,793.50;$ 400.00
+30/10/2025;FV JBGS 4942;29/11/2025;$ 1,242,500.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,242,500.50;$ 336.00
+Total Sucursal: Principal;;;$ 7,965,748.97;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 7,965,748.97;$ 0.00
+Total Tercero: ALDAMO SUPPLIES SAS;;;$ 7,965,748.97;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 7,965,748.97;$ 0.00
+ALIANZA FARMACEUTICA CORP SOCIEDAD POR ACCIONES SIMPLIFICADA - NIT: 900492666-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR 49C 85 17 SOTANO 1 - Ciudad: Barranquilla - Telefono: 0 - Email: profesional-compras2@clinicalaermitadecartagena.com;;;;;;;;;
+02/06/2026;FV JBGS 6689;02/07/2026;$ 4,408,516.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,408,516.00;$ 121.00
+04/08/2026;FV JBGS 7259;03/09/2026;$ 4,158,000.00;$ 0.00;$ 0.00;$ 4,158,000.00;$ 0.00;$ 0.00;$ 58.00
+18/08/2026;FV JBGS 7359;17/09/2026;$ 228,600.00;$ 0.00;$ 0.00;$ 228,600.00;$ 0.00;$ 0.00;$ 44.00
+23/09/2026;FV JBGS 7759;23/10/2026;$ 399,400.00;$ 0.00;$ 399,400.00;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+20/10/2026;FV JBGS 7976;19/11/2026;$ 1,596,787.50;$ 1,596,787.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+21/10/2026;FV JBGS 7990;20/11/2026;$ 2,277,136.50;$ 2,277,136.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+22/10/2026;FV JBGS 8002;21/11/2026;$ 5,825,636.50;$ 5,825,636.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 21.00
+23/10/2026;FV JBGS 8010;22/11/2026;$ 857,906.00;$ 857,906.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8017;22/11/2026;$ 4,858,817.50;$ 4,858,817.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8008;22/11/2026;$ 4,843,492.50;$ 4,843,492.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8012;22/11/2026;$ 827,150.00;$ 827,150.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8019;22/11/2026;$ 1,600,687.00;$ 1,600,687.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8016;22/11/2026;$ 2,313,927.00;$ 2,313,927.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8013;22/11/2026;$ 458,150.00;$ 458,150.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8014;22/11/2026;$ 1,856,200.00;$ 1,856,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8024;22/11/2026;$ 214,200.00;$ 214,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8015;22/11/2026;$ 3,709,324.50;$ 3,709,324.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8011;22/11/2026;$ 506,940.00;$ 506,940.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+23/10/2026;FV JBGS 8009;22/11/2026;$ 735,787.50;$ 735,787.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+29/10/2026;FV JBGS 8089;28/11/2026;$ 273,700.00;$ 273,700.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 28.00
+Total Sucursal: Principal;;;$ 41,950,358.50;$ 32,755,842.50;$ 399,400.00;$ 4,386,600.00;$ 0.00;$ 4,408,516.00;$ 0.00
+Total Tercero: ALIANZA FARMACEUTICA CORP SOCIEDAD POR ACCIONES SIMPLIFICADA;;;$ 41,950,358.50;$ 32,755,842.50;$ 399,400.00;$ 4,386,600.00;$ 0.00;$ 4,408,516.00;$ 0.00
+ALICIA ISABEL BERRIO HERAZO - CC: 64699090;;;;;;;;;
+Sucursal: Principal  - Direccion: CALLE 26  10-35 BARRIO LAS COLINAS - Ciudad: Sincelejo - Telefono: 3108325948 - Email: aliciaberrioh@hotmail.com;;;;;;;;;
+16/07/2026;FV JBGS 7084;15/08/2026;$ 318,575.00;$ 0.00;$ 0.00;$ 0.00;$ 318,575.00;$ 0.00;$ 77.00
+31/08/2026;FV JBGS 7516;30/09/2026;$ 554,084.00;$ 0.00;$ 0.00;$ 554,084.00;$ 0.00;$ 0.00;$ 31.00
+Total Sucursal: Principal ;;;$ 872,659.00;$ 0.00;$ 0.00;$ 554,084.00;$ 318,575.00;$ 0.00;$ 0.00
+Total Tercero: ALICIA ISABEL BERRIO HERAZO;;;$ 872,659.00;$ 0.00;$ 0.00;$ 554,084.00;$ 318,575.00;$ 0.00;$ 0.00
+ALIMENTOS CONCENTRADOS DEL CARIBE S.A. - NIT: 890103400-5;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 30 28 A 180 - Ciudad: Soledad - Telefono: 3116881711 - Email: facturacionelectronica@acondesa.com.co;;;;;;;;;
+07/04/2026;FV JBGS 6184;07/05/2026;$ 324,070.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 324,070.25;$ 177.00
+17/04/2026;FV JBGS 6286;17/05/2026;$ 1,497,085.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,497,085.00;$ 167.00
+20/04/2026;FV JBGS 6296;20/05/2026;$ 4,022,755.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,022,755.40;$ 164.00
+04/05/2026;FV JBGS 6411;04/06/2026;$ 5,267,677.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,267,677.50;$ 149.00
+06/05/2026;FV JBGS 6441;06/06/2026;$ 2,720,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,720,250.00;$ 147.00
+20/05/2026;FV JBGS 6552;20/06/2026;$ 2,727,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,727,600.00;$ 133.00
+09/06/2026;FV JBGS 6690;09/07/2026;$ 4,773,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,773,300.00;$ 114.00
+19/06/2026;FV JBGS 6829;19/07/2026;$ 5,063,675.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,063,675.75;$ 104.00
+24/06/2026;FV JBGS 6877;24/07/2026;$ 8,165,752.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 8,165,752.50;$ 99.00
+21/08/2026;FV JBGS 7412;21/09/2026;$ 7,712,970.90;$ 0.00;$ 0.00;$ 7,712,970.90;$ 0.00;$ 0.00;$ 40.00
+04/09/2026;FV JBGS 7573;04/10/2026;$ 878,287.50;$ 0.00;$ 878,287.50;$ 0.00;$ 0.00;$ 0.00;$ 27.00
+Total Sucursal: Principal ;;;$ 43,153,424.80;$ 0.00;$ 878,287.50;$ 7,712,970.90;$ 0.00;$ 34,562,166.40;$ 0.00
+Total Tercero: ALIMENTOS CONCENTRADOS DEL CARIBE S.A.;;;$ 43,153,424.80;$ 0.00;$ 878,287.50;$ 7,712,970.90;$ 0.00;$ 34,562,166.40;$ 0.00
+ALQUIMICOS SAS - NIT: 802017552-8;;;;;;;;;
+Sucursal: Principal - Direccion: CL 70 58 53 - Ciudad: Barranquilla - Telefono: 3693361 - Email: alquimicos_eu@hotmail.com;;;;;;;;;
+28/10/2026;FV JBGS 8062;27/11/2026;$ 367,975.00;$ 367,975.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 27.00
+Total Sucursal: Principal;;;$ 367,975.00;$ 367,975.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ALQUIMICOS SAS;;;$ 367,975.00;$ 367,975.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+ANASHIWAYA IPSI - NIT: 900177624-0;;;;;;;;;
+Sucursal: Principal - Direccion: CL 15 8 86 - Ciudad: Riohacha - Telefono: 7274476 - Email: ipsi_anashiwaya@hotmail.com;;;;;;;;;
+16/03/2026;FV JBGS 6010;15/04/2026;$ 61,213,649.06;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 61,213,649.06;$ 199.00
+Total Sucursal: Principal;;;$ 61,213,649.06;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 61,213,649.06;$ 0.00
+Total Tercero: ANASHIWAYA IPSI;;;$ 61,213,649.06;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 61,213,649.06;$ 0.00
+ANGELICA ROCIO MENDOZA GUERRA - CC: 23133585;;;;;;;;;
+Sucursal: Principal - Direccion: CR 16 26 38 BRR CRUZ DE COLORADO - Ciudad: Sincelejo - Telefono: 2714042 - Email: laboratorioclinicolamedallamilagrosa@hotmail.com;;;;;;;;;
+12/08/2026;FV JBGS 7324;11/09/2026;$ 2,151,318.22;$ 0.00;$ 0.00;$ 2,151,318.22;$ 0.00;$ 0.00;$ 50.00
+13/08/2026;FV JBGS 7333;12/09/2026;$ 125,800.00;$ 0.00;$ 0.00;$ 125,800.00;$ 0.00;$ 0.00;$ 49.00
+19/08/2026;FV JBGS 7393;18/09/2026;$ 10,739,743.00;$ 0.00;$ 0.00;$ 10,739,743.00;$ 0.00;$ 0.00;$ 43.00
+26/08/2026;FV JBGS 7474;25/09/2026;$ 1,425,138.00;$ 0.00;$ 0.00;$ 1,425,138.00;$ 0.00;$ 0.00;$ 36.00
+27/08/2026;FV JBGS 7485;26/09/2026;$ 558,000.00;$ 0.00;$ 0.00;$ 558,000.00;$ 0.00;$ 0.00;$ 35.00
+01/09/2026;FV JBGS 7526;01/10/2026;$ 885,000.00;$ 0.00;$ 885,000.00;$ 0.00;$ 0.00;$ 0.00;$ 30.00
+18/09/2026;FV JBGS 7701;18/10/2026;$ 5,844,981.00;$ 0.00;$ 5,844,981.00;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+23/09/2026;FV JBGS 7755;23/10/2026;$ 1,282,425.00;$ 0.00;$ 1,282,425.00;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+06/10/2026;FV JBGS 7869;05/11/2026;$ 7,370,388.00;$ 7,370,388.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 5.00
+08/10/2026;FV JBGS 7891;07/11/2026;$ 28,198,478.72;$ 28,198,478.72;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 7.00
+13/10/2026;FV JBGS 7908;12/11/2026;$ 2,927,890.00;$ 2,927,890.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+14/10/2026;FV JBGS 7921;13/11/2026;$ 2,681,626.00;$ 2,681,626.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+26/10/2026;FV JBGS 8035;25/11/2026;$ 1,019,600.00;$ 1,019,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+Total Sucursal: Principal;;;$ 65,210,387.94;$ 42,197,982.72;$ 8,012,406.00;$ 14,999,999.22;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ANGELICA ROCIO MENDOZA GUERRA;;;$ 65,210,387.94;$ 42,197,982.72;$ 8,012,406.00;$ 14,999,999.22;$ 0.00;$ 0.00;$ 0.00
+ARNOBIS  MARIA  PATERNINA  ROSSO - CC: 34995401;;;;;;;;;
+Sucursal: Principal - Direccion: CARRERA 8 #18-45 - Ciudad: Planeta Rica - Telefono: 7767609 - Email: laboratorioarnodipaterninarosso@hotmail.com;;;;;;;;;
+28/09/2026;FV JBGS 7792;28/10/2026;$ 842,480.00;$ 0.00;$ 842,480.00;$ 0.00;$ 0.00;$ 0.00;$ 3.00
+Total Sucursal: Principal;;;$ 842,480.00;$ 0.00;$ 842,480.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ARNOBIS  MARIA  PATERNINA  ROSSO;;;$ 842,480.00;$ 0.00;$ 842,480.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+BEATRIZ DEL ROSARIO JULIO ARRIETA - CC: 40981222;;;;;;;;;
+Sucursal: Principal - Direccion: CL  8  9 55 - Ciudad: Fundación - Telefono: 3006918519 - Email: beatrizjulioarrieta@hotmail.com;;;;;;;;;
+29/07/2026;FV JBGS 7176;28/08/2026;$ 184,800.00;$ 0.00;$ 0.00;$ 0.00;$ 184,800.00;$ 0.00;$ 64.00
+02/09/2026;FV JBGS 7543;02/10/2026;$ 815,200.00;$ 0.00;$ 815,200.00;$ 0.00;$ 0.00;$ 0.00;$ 29.00
+15/09/2026;FV JBGS 7664;15/10/2026;$ 183,200.00;$ 0.00;$ 183,200.00;$ 0.00;$ 0.00;$ 0.00;$ 16.00
+06/10/2026;FV JBGS 7873;05/11/2026;$ 778,600.00;$ 778,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 5.00
+Total Sucursal: Principal;;;$ 1,961,800.00;$ 778,600.00;$ 998,400.00;$ 0.00;$ 184,800.00;$ 0.00;$ 0.00
+Total Tercero: BEATRIZ DEL ROSARIO JULIO ARRIETA;;;$ 1,961,800.00;$ 778,600.00;$ 998,400.00;$ 0.00;$ 184,800.00;$ 0.00;$ 0.00
+BEATRIZ ELENA MONTES  HOYOS - CC: 1066735099;;;;;;;;;
+Sucursal: Principal - Direccion: CR 7 13 22 BRR LOS ABETOS - Ciudad: Planeta Rica - Telefono: 3005300392 - Email: beaty0723@yahoo.es;;;;;;;;;
+04/08/2026;FV JBGS 7255;03/09/2026;$ 2,046,000.00;$ 0.00;$ 0.00;$ 2,046,000.00;$ 0.00;$ 0.00;$ 58.00
+05/08/2026;FV JBGS 7274;04/09/2026;$ 369,495.00;$ 0.00;$ 0.00;$ 369,495.00;$ 0.00;$ 0.00;$ 57.00
+05/08/2026;FV JBGS 7272;05/09/2026;$ 1,202,100.00;$ 0.00;$ 0.00;$ 1,202,100.00;$ 0.00;$ 0.00;$ 56.00
+19/08/2026;FV JBGS 7384;18/09/2026;$ 519,410.00;$ 0.00;$ 0.00;$ 519,410.00;$ 0.00;$ 0.00;$ 43.00
+19/08/2026;FV JBGS 7395;18/09/2026;$ 164,220.00;$ 0.00;$ 0.00;$ 164,220.00;$ 0.00;$ 0.00;$ 43.00
+31/08/2026;FV JBGS 7515;30/09/2026;$ 812,000.00;$ 0.00;$ 0.00;$ 812,000.00;$ 0.00;$ 0.00;$ 31.00
+15/09/2026;FV JBGS 7669;15/10/2026;$ 377,550.00;$ 0.00;$ 377,550.00;$ 0.00;$ 0.00;$ 0.00;$ 16.00
+13/10/2026;FV JBGS 7906;12/11/2026;$ 441,300.00;$ 441,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+13/10/2026;FV JBGS 7911;12/11/2026;$ 783,377.00;$ 783,377.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+Total Sucursal: Principal;;;$ 6,715,452.00;$ 1,224,677.00;$ 377,550.00;$ 5,113,225.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: BEATRIZ ELENA MONTES  HOYOS;;;$ 6,715,452.00;$ 1,224,677.00;$ 377,550.00;$ 5,113,225.00;$ 0.00;$ 0.00;$ 0.00
+BIO TEST I.P.S. S.A.S - NIT: 900202037-4;;;;;;;;;
+Sucursal: Principal - Direccion: CL  20  19 16 - Ciudad: Soledad - Telefono: 3929090 - Email: biotestips@hotmail.com;;;;;;;;;
+24/07/2025;FV JBGS 4096;23/08/2025;$ 135,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 135,000.00;$ 434.00
+Total Sucursal: Principal;;;$ 135,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 135,000.00;$ 0.00
+Total Tercero: BIO TEST I.P.S. S.A.S;;;$ 135,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 135,000.00;$ 0.00
+BIOBAC S.O S.A.S - NIT: 900556028-7;;;;;;;;;
+Sucursal: Principal - Direccion: CR  62  74 198 - Ciudad: Barranquilla - Telefono: 3854641 - Email: contabilidad@biobacips.com;;;;;;;;;
+05/10/2026;FV JBGS 7858;04/12/2026;$ 1,505,400.00;$ 1,505,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 34.00
+20/10/2026;FV JBGS 7983;19/12/2026;$ 185,450.00;$ 185,450.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 49.00
+28/10/2026;FV JBGS 8061;27/12/2026;$ 161,650.00;$ 161,650.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 57.00
+29/10/2026;FV JBGS 8090;28/12/2026;$ 268,750.00;$ 268,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 58.00
+Total Sucursal: Principal;;;$ 2,121,250.00;$ 2,121,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: BIOBAC S.O S.A.S;;;$ 2,121,250.00;$ 2,121,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+C.V. HUELLAS S.A.S. - NIT: 902028165-0;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 19 CL 24 A 14  - Ciudad: Soledad - Telefono: 6053225918 - Email: vethuellas19@gmail.com;;;;;;;;;
+18/09/2026;FV JBGS 7710;18/09/2026;$ 51,200.00;$ 0.00;$ 0.00;$ 51,200.00;$ 0.00;$ 0.00;$ 43.00
+Total Sucursal: Principal ;;;$ 51,200.00;$ 0.00;$ 0.00;$ 51,200.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: C.V. HUELLAS S.A.S.;;;$ 51,200.00;$ 0.00;$ 0.00;$ 51,200.00;$ 0.00;$ 0.00;$ 0.00
+CELEDON DISTRIBUCIONES MEDICAS S.A.S. - NIT: 901474046-0;;;;;;;;;
+Sucursal: Principal - Direccion: CR 41 66 30 - Ciudad: Barranquilla - Telefono: 3013213229 - Email: facturas.cedimedicas@gmail.com;;;;;;;;;
+31/08/2026;FV JBGS 7505;01/09/2026;$ 694,687.50;$ 0.00;$ 0.00;$ 694,687.50;$ 0.00;$ 0.00;$ 60.00
+22/09/2026;FV JBGS 7744;23/09/2026;$ 653,640.00;$ 0.00;$ 0.00;$ 653,640.00;$ 0.00;$ 0.00;$ 38.00
+25/09/2026;FV JBGS 7783;26/09/2026;$ 476,500.00;$ 0.00;$ 0.00;$ 476,500.00;$ 0.00;$ 0.00;$ 35.00
+02/10/2026;FV JBGS 7834;03/10/2026;$ 475,671.00;$ 0.00;$ 475,671.00;$ 0.00;$ 0.00;$ 0.00;$ 28.00
+14/10/2026;FV JBGS 7926;15/10/2026;$ 362,534.00;$ 0.00;$ 362,534.00;$ 0.00;$ 0.00;$ 0.00;$ 16.00
+17/10/2026;FV JBGS 7952;18/10/2026;$ 105,434.00;$ 0.00;$ 105,434.00;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+19/10/2026;FV JBGS 7959;20/10/2026;$ 405,500.00;$ 0.00;$ 405,500.00;$ 0.00;$ 0.00;$ 0.00;$ 11.00
+20/10/2026;FV JBGS 7978;21/10/2026;$ 250,000.00;$ 0.00;$ 250,000.00;$ 0.00;$ 0.00;$ 0.00;$ 10.00
+23/10/2026;FV JBGS 8007;24/10/2026;$ 582,465.00;$ 0.00;$ 582,465.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+27/10/2026;FV JBGS 8052;28/10/2026;$ 1,328,468.50;$ 0.00;$ 1,328,468.50;$ 0.00;$ 0.00;$ 0.00;$ 3.00
+28/10/2026;FV JBGS 8073;29/10/2026;$ 209,500.00;$ 0.00;$ 209,500.00;$ 0.00;$ 0.00;$ 0.00;$ 2.00
+29/10/2026;FV JBGS 8077;30/10/2026;$ 616,200.00;$ 0.00;$ 616,200.00;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+31/10/2026;FV JBGS 8100;01/11/2026;$ 133,500.00;$ 133,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+Total Sucursal: Principal;;;$ 6,294,100.00;$ 133,500.00;$ 4,335,772.50;$ 1,824,827.50;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: CELEDON DISTRIBUCIONES MEDICAS S.A.S.;;;$ 6,294,100.00;$ 133,500.00;$ 4,335,772.50;$ 1,824,827.50;$ 0.00;$ 0.00;$ 0.00
+CLINICA CEDES LTDA - NIT: 800193989-8;;;;;;;;;
+Sucursal: Principal - Direccion: CL 13 11 75 - Ciudad: Riohacha - Telefono: 7280717 - Email: administracion@clinicacedes.com;;;;;;;;;
+26/01/2026;FV JBGS 5559;25/02/2026;$ 9,444,109.78;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 9,444,109.78;$ 248.00
+27/01/2026;FV JBGS 5573;26/02/2026;$ 768,690.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 768,690.00;$ 247.00
+29/01/2026;FV JBGS 5593;28/02/2026;$ 1,877,850.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,877,850.00;$ 245.00
+30/01/2026;FV JBGS 5612;01/03/2026;$ 460,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 460,000.00;$ 244.00
+10/02/2026;FV JBGS 5708;12/03/2026;$ 383,955.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 383,955.00;$ 233.00
+06/03/2026;FV JBGS 5915;05/04/2026;$ 3,871,920.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,871,920.00;$ 209.00
+18/03/2026;FV JBGS 6033;17/04/2026;$ 8,777,625.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 8,777,625.00;$ 197.00
+29/04/2026;FV JBGS 6383;29/05/2026;$ 16,347,306.10;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 16,347,306.10;$ 155.00
+09/06/2026;FV JBGS 6702;09/07/2026;$ 1,533,094.85;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,533,094.85;$ 114.00
+16/07/2026;FV JBGS 7073;15/08/2026;$ 745,680.00;$ 0.00;$ 0.00;$ 0.00;$ 745,680.00;$ 0.00;$ 77.00
+31/07/2026;FV JBGS 7222;30/08/2026;$ 897,000.00;$ 0.00;$ 0.00;$ 0.00;$ 897,000.00;$ 0.00;$ 62.00
+14/09/2026;FV JBGS 7646;14/10/2026;$ 2,355,892.50;$ 0.00;$ 2,355,892.50;$ 0.00;$ 0.00;$ 0.00;$ 17.00
+24/09/2026;FV JBGS 7764;24/10/2026;$ 1,141,920.00;$ 0.00;$ 1,141,920.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+20/10/2026;FV JBGS 7968;19/11/2026;$ 2,027,098.80;$ 2,027,098.80;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+Total Sucursal: Principal;;;$ 50,632,142.03;$ 2,027,098.80;$ 3,497,812.50;$ 0.00;$ 1,642,680.00;$ 43,464,550.73;$ 0.00
+Total Tercero: CLINICA CEDES LTDA;;;$ 50,632,142.03;$ 2,027,098.80;$ 3,497,812.50;$ 0.00;$ 1,642,680.00;$ 43,464,550.73;$ 0.00
+CLINICA PORVENIR LTDA - NIT: 802019573-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL  18   34   18 - Ciudad: Soledad - Telefono: 6053758989 - Email: a@a.com;;;;;;;;;
+25/08/2026;FV JBGS 7460;09/10/2026;$ 4,923,240.00;$ 0.00;$ 4,923,240.00;$ 0.00;$ 0.00;$ 0.00;$ 22.00
+01/09/2026;FV JBGS 7536;16/10/2026;$ 108,800.00;$ 0.00;$ 108,800.00;$ 0.00;$ 0.00;$ 0.00;$ 15.00
+03/10/2026;FV JBGS 7847;17/11/2026;$ 5,612,878.00;$ 5,612,878.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 17.00
+31/10/2026;FV JBGS 8103;15/12/2026;$ 677,820.00;$ 677,820.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 45.00
+Total Sucursal: Principal;;;$ 11,322,738.00;$ 6,290,698.00;$ 5,032,040.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: CLINICA PORVENIR LTDA;;;$ 11,322,738.00;$ 6,290,698.00;$ 5,032,040.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+CLINICA SAN FELIPE DE BARAJAS SAS - NIT: 900360201-2;;;;;;;;;
+Sucursal: Principal - Direccion: KM 1 VIA AL MAR LT 1 B SEC PONTEZUELA - Ciudad: Cartagena De Indias - Telefono: 3052246478 - Email: administracion@clinicasanfelipedebarajas.org;;;;;;;;;
+15/07/2026;FV JBGS 7053;14/08/2026;$ 1,136,460.95;$ 0.00;$ 0.00;$ 0.00;$ 1,136,460.95;$ 0.00;$ 78.00
+20/08/2026;FV JBGS 7407;19/09/2026;$ 1,140,642.00;$ 0.00;$ 0.00;$ 1,140,642.00;$ 0.00;$ 0.00;$ 42.00
+Total Sucursal: Principal;;;$ 2,277,102.95;$ 0.00;$ 0.00;$ 1,140,642.00;$ 1,136,460.95;$ 0.00;$ 0.00
+Total Tercero: CLINICA SAN FELIPE DE BARAJAS SAS;;;$ 2,277,102.95;$ 0.00;$ 0.00;$ 1,140,642.00;$ 1,136,460.95;$ 0.00;$ 0.00
+CLINICA SAN IGNACIO LIMITADA - NIT: 800025755-2;;;;;;;;;
+Sucursal: Principal - Direccion: CL  76  6B 36 - Ciudad: Barranquilla - Telefono: 3852438 - Email: compras@clinicasanignacio.org;;;;;;;;;
+21/04/2025;FV JBGS 3321;22/04/2025;$ 674,229.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 674,229.50;$ 557.00
+23/04/2025;FV JBGS 3345;24/04/2025;$ 1,957,039.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,957,039.50;$ 555.00
+24/04/2025;FV JBGS 3353;25/04/2025;$ 978,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 978,300.00;$ 554.00
+30/04/2025;FV JBGS 3418;01/05/2025;$ 1,362,025.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,362,025.00;$ 548.00
+08/05/2025;FV JBGS 3461;09/05/2025;$ 2,514,752.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,514,752.50;$ 540.00
+16/05/2025;FV JBGS 3537;17/05/2025;$ 614,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 614,400.00;$ 532.00
+16/05/2025;FV JBGS 3539;17/05/2025;$ 3,559,030.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,559,030.00;$ 532.00
+21/05/2025;FV JBGS 3575;22/05/2025;$ 310,471.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 310,471.00;$ 527.00
+27/05/2025;FV JBGS 3621;28/05/2025;$ 4,693,152.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,693,152.50;$ 521.00
+03/06/2025;FV JBGS 3660;04/06/2025;$ 749,794.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 749,794.00;$ 514.00
+07/06/2025;FV JBGS 3703;08/06/2025;$ 2,365,757.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,365,757.00;$ 510.00
+17/06/2025;FV JBGS 3795;18/06/2025;$ 71,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 71,400.00;$ 500.00
+17/06/2025;FV JBGS 3784;18/06/2025;$ 807,885.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 807,885.00;$ 500.00
+27/06/2025;FV JBGS 3874;27/07/2025;$ 4,727,577.10;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,727,577.10;$ 461.00
+04/08/2025;FV JBGS 4204;03/09/2025;$ 7,277.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 7,277.50;$ 423.00
+Total Sucursal: Principal;;;$ 25,393,090.60;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 25,393,090.60;$ 0.00
+Total Tercero: CLINICA SAN IGNACIO LIMITADA;;;$ 25,393,090.60;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 25,393,090.60;$ 0.00
+CLINICA SANTA ISABEL CIENAGA S.A.S. - NIT: 901638971-4;;;;;;;;;
+Sucursal: Principal - Direccion: CL 9 13 09 - Ciudad: Ciénaga - Telefono: 3168013665 - Email: admonsecv@gmail.com;;;;;;;;;
+22/04/2026;FV JBGS 6328;22/05/2026;$ 15,673,601.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 15,673,601.00;$ 162.00
+30/04/2026;FV JBGS 6399;30/05/2026;$ 414,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 414,300.00;$ 154.00
+04/05/2026;FV JBGS 6421;03/06/2026;$ 472,430.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 472,430.00;$ 150.00
+04/05/2026;FV JBGS 6422;03/06/2026;$ 1,154,887.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,154,887.50;$ 150.00
+19/05/2026;FV JBGS 6538;18/06/2026;$ 382,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 382,600.00;$ 135.00
+19/05/2026;FV JBGS 6537;18/06/2026;$ 1,978,430.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,978,430.00;$ 135.00
+21/05/2026;FV JBGS 6556;20/06/2026;$ 744,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 744,000.00;$ 133.00
+22/05/2026;FV JBGS 6576;21/06/2026;$ 653,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 653,250.00;$ 132.00
+22/05/2026;FV JBGS 6577;21/06/2026;$ 964,760.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 964,760.00;$ 132.00
+02/06/2026;FV JBGS 6684;02/07/2026;$ 1,961,130.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,961,130.00;$ 121.00
+18/06/2026;FV JBGS 6818;18/07/2026;$ 394,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 394,200.00;$ 105.00
+01/07/2026;FV JBGS 6923;31/07/2026;$ 519,920.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 519,920.00;$ 92.00
+09/07/2026;FV JBGS 7008;08/08/2026;$ 6,854,310.50;$ 0.00;$ 0.00;$ 0.00;$ 6,854,310.50;$ 0.00;$ 84.00
+10/07/2026;FV JBGS 7024;09/08/2026;$ 519,200.00;$ 0.00;$ 0.00;$ 0.00;$ 519,200.00;$ 0.00;$ 83.00
+23/07/2026;FV JBGS 7124;23/08/2026;$ 506,800.00;$ 0.00;$ 0.00;$ 0.00;$ 506,800.00;$ 0.00;$ 69.00
+29/07/2026;FV JBGS 7187;28/08/2026;$ 434,707.00;$ 0.00;$ 0.00;$ 0.00;$ 434,707.00;$ 0.00;$ 64.00
+18/08/2026;FV JBGS 7373;17/09/2026;$ 384,850.00;$ 0.00;$ 0.00;$ 384,850.00;$ 0.00;$ 0.00;$ 44.00
+19/08/2026;FV JBGS 7398;18/09/2026;$ 544,350.00;$ 0.00;$ 0.00;$ 544,350.00;$ 0.00;$ 0.00;$ 43.00
+21/08/2026;FV JBGS 7413;20/09/2026;$ 884,715.00;$ 0.00;$ 0.00;$ 884,715.00;$ 0.00;$ 0.00;$ 41.00
+27/08/2026;FV JBGS 7487;26/09/2026;$ 400,000.00;$ 0.00;$ 0.00;$ 400,000.00;$ 0.00;$ 0.00;$ 35.00
+21/09/2026;FV JBGS 7718;21/10/2026;$ 502,442.00;$ 0.00;$ 502,442.00;$ 0.00;$ 0.00;$ 0.00;$ 10.00
+20/10/2026;FV JBGS 7981;19/11/2026;$ 259,600.00;$ 259,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+20/10/2026;FV JBGS 7979;19/11/2026;$ 253,400.00;$ 253,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+Total Sucursal: Principal;;;$ 36,857,883.00;$ 513,000.00;$ 502,442.00;$ 2,213,915.00;$ 8,315,017.50;$ 25,313,508.50;$ 0.00
+Total Tercero: CLINICA SANTA ISABEL CIENAGA S.A.S.;;;$ 36,857,883.00;$ 513,000.00;$ 502,442.00;$ 2,213,915.00;$ 8,315,017.50;$ 25,313,508.50;$ 0.00
+CLINISOLUCIONES INTEGRALES S.A.S. - NIT: 900804804-0;;;;;;;;;
+Sucursal: Principal - Direccion: CR 35 56 22 - Ciudad: Barranquilla - Telefono: 3961972 - Email: inforclinisoluciones@gmail.com;;;;;;;;;
+28/02/2025;SI  1;24/12/2023;$ 2,336,413.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,336,413.00;$ 1,042.00
+28/02/2025;SI  1;20/12/2023;$ 515,899.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 515,899.00;$ 1,046.00
+Total Sucursal: Principal;;;$ 2,852,312.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,852,312.00;$ 0.00
+Total Tercero: CLINISOLUCIONES INTEGRALES S.A.S.;;;$ 2,852,312.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,852,312.00;$ 0.00
+CLINIVIDA Y SALUD IPS. S.A.S - NIT: 901336751-4;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 11 A 15 55 BRR JOSE ANTONIO GALAN - Ciudad: Riohacha - Telefono: 3215496698 - Email: juliomario.gomezb@gmail.com;;;;;;;;;
+01/10/2026;FV JBGS 7823;31/10/2026;$ 2,834,566.50;$ 2,834,566.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+05/10/2026;FV JBGS 7855;04/11/2026;$ 470,050.00;$ 470,050.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 4.00
+14/10/2026;FV JBGS 7924;13/11/2026;$ 2,093,910.00;$ 2,093,910.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+14/10/2026;FV JBGS 7925;13/11/2026;$ 90,000.00;$ 90,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+21/10/2026;FV JBGS 7988;20/11/2026;$ 505,750.00;$ 505,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+Total Sucursal: Principal ;;;$ 5,994,276.50;$ 5,994,276.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: CLINIVIDA Y SALUD IPS. S.A.S;;;$ 5,994,276.50;$ 5,994,276.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+CORPORACION UNIVERSIDAD DEL SINU ELIAS BECHARA ZAINUM - NIT: 891000692-1;;;;;;;;;
+Sucursal: Principal 2 - Direccion: TV 54 30 453 SEDE SANTILLANA - Ciudad: Cartagena De Indias - Telefono: 6517013 - Email: efactura@unisinucartagena.edu.co;;;;;;;;;
+21/08/2026;FV JBGS 7422;21/09/2026;$ 218,295.00;$ 0.00;$ 0.00;$ 218,295.00;$ 0.00;$ 0.00;$ 40.00
+20/10/2026;FV JBGS 7977;19/11/2026;$ 675,700.00;$ 675,700.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+Total Sucursal: Principal 2;;;$ 893,995.00;$ 675,700.00;$ 0.00;$ 218,295.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: CORPORACION UNIVERSIDAD DEL SINU ELIAS BECHARA ZAINUM;;;$ 893,995.00;$ 675,700.00;$ 0.00;$ 218,295.00;$ 0.00;$ 0.00;$ 0.00
+CRUZ ROJA COLOMBIANA, SECCIONAL LA GUAJIRA UNIDAD MUNICIPAL DE MAICAO - NIT: 800067514-4;;;;;;;;;
+Sucursal: Principal - Direccion: CL 15 12 50 - Ciudad: Maicao - Telefono: 6057268657 - Email: direjecutivo.maicao@cruzrojacolombiana.org;;;;;;;;;
+16/09/2025;FV JBGS 4582;16/10/2025;$ 2,672,670.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,672,670.00;$ 380.00
+Total Sucursal: Principal;;;$ 2,672,670.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,672,670.00;$ 0.00
+Total Tercero: CRUZ ROJA COLOMBIANA, SECCIONAL LA GUAJIRA UNIDAD MUNICIPAL DE MAICAO;;;$ 2,672,670.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,672,670.00;$ 0.00
+DAMOSALUD LTDA - NIT: 812004646-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL 13 15 15 - Ciudad: Cereté - Telefono: 7746197 - Email: damosaludltda@gmail.com;;;;;;;;;
+05/10/2026;FV JBGS 7860;04/11/2026;$ 6,038,876.19;$ 6,038,876.19;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 4.00
+Total Sucursal: Principal;;;$ 6,038,876.19;$ 6,038,876.19;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: DAMOSALUD LTDA;;;$ 6,038,876.19;$ 6,038,876.19;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+DANITH DEL CARMEN GARRIDO MEZA - CC: 64582194;;;;;;;;;
+Sucursal: Principal  - Direccion: CARRERA 46  23 37 BRR LAS MARGARITAS - Ciudad: Sincelejo - Telefono: 3116877379 - Email: dgarridom78@gmail.com;;;;;;;;;
+03/09/2026;FV JBGS 7567;03/09/2026;$ 597,599.00;$ 0.00;$ 0.00;$ 597,599.00;$ 0.00;$ 0.00;$ 58.00
+Total Sucursal: Principal ;;;$ 597,599.00;$ 0.00;$ 0.00;$ 597,599.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: DANITH DEL CARMEN GARRIDO MEZA;;;$ 597,599.00;$ 0.00;$ 0.00;$ 597,599.00;$ 0.00;$ 0.00;$ 0.00
+DIAGNOSTICOS LABORATORIO CLINICO-IPS LTDA - NIT: 900250444-3;;;;;;;;;
+Sucursal: Principal - Direccion: CL 23 13 105 BRR ALCAZARES - Ciudad: Santa Marta - Telefono: 6054214764 - Email: diagnosticoslaboratorio@hotmail.com;;;;;;;;;
+29/07/2026;FV JBGS 7178;30/07/2026;$ 1,050,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,050,750.00;$ 93.00
+Total Sucursal: Principal;;;$ 1,050,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,050,750.00;$ 0.00
+Total Tercero: DIAGNOSTICOS LABORATORIO CLINICO-IPS LTDA;;;$ 1,050,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,050,750.00;$ 0.00
+DIPRESALUD I.P.S. S.A.S. - NIT: 900484031-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR  19   16B   16 BARRIO JORGE DANGOND - Ciudad: Valledupar - Telefono: 6055710835 - Email: dipresaludipssas@outlook.com;;;;;;;;;
+13/10/2026;FV JBGS 7914;12/11/2026;$ 1,562,539.50;$ 1,562,539.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+Total Sucursal: Principal;;;$ 1,562,539.50;$ 1,562,539.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: DIPRESALUD I.P.S. S.A.S.;;;$ 1,562,539.50;$ 1,562,539.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+DISTRIBUCIONES FARMACEUTICAS MSP S.A.S. - NIT: 901952146-1;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 70 CR 41 63 - Ciudad: Barranquilla - Telefono: 3057526169 - Email: distribucionesfarmaceuticasmsp@gmail.com;;;;;;;;;
+10/08/2026;FV JBGS 7300;11/08/2026;$ 6,020.50;$ 0.00;$ 0.00;$ 0.00;$ 6,020.50;$ 0.00;$ 81.00
+25/08/2026;FV JBGS 7449;26/08/2026;$ 314,636.00;$ 0.00;$ 0.00;$ 0.00;$ 314,636.00;$ 0.00;$ 66.00
+11/09/2026;FV JBGS 7628;12/09/2026;$ 1,353,025.00;$ 0.00;$ 0.00;$ 1,353,025.00;$ 0.00;$ 0.00;$ 49.00
+17/09/2026;FV JBGS 7686;18/09/2026;$ 142,800.00;$ 0.00;$ 0.00;$ 142,800.00;$ 0.00;$ 0.00;$ 43.00
+19/09/2026;FV JBGS 7712;20/09/2026;$ 190,400.00;$ 0.00;$ 0.00;$ 190,400.00;$ 0.00;$ 0.00;$ 41.00
+15/10/2026;FV JBGS 7938;16/10/2026;$ 346,800.00;$ 0.00;$ 346,800.00;$ 0.00;$ 0.00;$ 0.00;$ 15.00
+Total Sucursal: Principal ;;;$ 2,353,681.50;$ 0.00;$ 346,800.00;$ 1,686,225.00;$ 320,656.50;$ 0.00;$ 0.00
+Total Tercero: DISTRIBUCIONES FARMACEUTICAS MSP S.A.S.;;;$ 2,353,681.50;$ 0.00;$ 346,800.00;$ 1,686,225.00;$ 320,656.50;$ 0.00;$ 0.00
+DOQUIMICA DE LA COSTA LIMITADA - NIT: 890111930-0;;;;;;;;;
+Sucursal: Principal - Direccion: CR 38 70 B 67 LC 102 - Ciudad: Barranquilla - Telefono: 3601169 - Email: doquim@metrotel.net.co;;;;;;;;;
+31/10/2026;FV JBGS 8107;30/11/2026;$ 47,400.00;$ 47,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 30.00
+Total Sucursal: Principal;;;$ 47,400.00;$ 47,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: DOQUIMICA DE LA COSTA LIMITADA;;;$ 47,400.00;$ 47,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+DOTACIONES BM S.A.S. - NIT: 901468366-8;;;;;;;;;
+Sucursal: Principal - Direccion: CL 47 25 40 - Ciudad: Barranquilla - Telefono: 3163434422 - Email: dotacionesbmsas@gmail.com;;;;;;;;;
+14/03/2025;FV JBGS 3058;14/04/2025;$ 1,606,938.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,606,938.75;$ 565.00
+25/03/2025;FV JBGS 3128;25/04/2025;$ 1,481,564.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,481,564.50;$ 554.00
+28/03/2025;FV JBGS 3157;28/04/2025;$ 4,809,077.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,809,077.50;$ 551.00
+14/04/2025;FV JBGS 3306;14/05/2025;$ 2,512,125.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,512,125.00;$ 535.00
+30/04/2025;FV JBGS 3421;30/05/2025;$ 4,399,922.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,399,922.00;$ 519.00
+12/05/2025;FV JBGS 3487;11/06/2025;$ 1,984,184.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,984,184.75;$ 507.00
+15/05/2025;FV JBGS 3521;14/06/2025;$ 1,995,863.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,995,863.50;$ 504.00
+29/05/2025;FV JBGS 3637;28/06/2025;$ 1,599,487.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,599,487.50;$ 490.00
+10/06/2025;FV JBGS 3723;10/07/2025;$ 1,134,412.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,134,412.50;$ 478.00
+16/06/2025;FV JBGS 3769;16/07/2025;$ 2,321,176.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,321,176.00;$ 472.00
+18/06/2025;FV JBGS 3808;18/07/2025;$ 2,564,102.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,564,102.00;$ 470.00
+24/06/2025;FV JBGS 3848;23/08/2025;$ 1,635,482.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,635,482.00;$ 434.00
+01/07/2025;FV JBGS 3896;30/08/2025;$ 1,872,651.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,872,651.50;$ 427.00
+03/07/2025;FV JBGS 3919;01/09/2025;$ 2,348,261.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,348,261.25;$ 425.00
+21/07/2025;FV JBGS 4071;19/09/2025;$ 1,451,873.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,451,873.00;$ 407.00
+28/07/2025;FV JBGS 4137;26/09/2025;$ 2,304,042.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,304,042.50;$ 400.00
+31/07/2025;FV JBGS 4162;29/09/2025;$ 1,484,611.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,484,611.50;$ 397.00
+11/08/2025;FV JBGS 4242;10/10/2025;$ 1,922,280.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,922,280.00;$ 386.00
+01/09/2025;FV JBGS 4440;31/10/2025;$ 3,024,406.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,024,406.50;$ 365.00
+10/09/2025;FV JBGS 4538;09/11/2025;$ 1,624,432.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,624,432.00;$ 356.00
+26/09/2025;FV JBGS 4668;25/11/2025;$ 3,315,305.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,315,305.75;$ 340.00
+01/10/2025;FV JBGS 4701;30/11/2025;$ 596,407.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 596,407.50;$ 335.00
+08/10/2025;FV JBGS 4759;07/12/2025;$ 1,994,998.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,994,998.25;$ 328.00
+16/10/2025;FV JBGS 4825;15/12/2025;$ 1,056,022.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,056,022.50;$ 320.00
+18/10/2025;FV JBGS 4852;17/12/2025;$ 936,780.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 936,780.00;$ 318.00
+21/10/2025;FV JBGS 4870;20/12/2025;$ 3,702,463.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,702,463.75;$ 315.00
+04/12/2025;FV JBGS 5231;02/02/2026;$ 1,305,797.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,305,797.50;$ 271.00
+29/12/2025;FV JBGS 5412;27/02/2026;$ 4,165,036.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,165,036.50;$ 246.00
+13/01/2026;FV JBGS 5458;14/03/2026;$ 1,396,926.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,396,926.00;$ 231.00
+21/01/2026;FV JBGS 5507;22/03/2026;$ 967,195.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 967,195.75;$ 223.00
+23/01/2026;FV JBGS 5534;24/03/2026;$ 6,047,152.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 6,047,152.25;$ 221.00
+13/02/2026;FV JBGS 5748;14/04/2026;$ 779,720.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 779,720.00;$ 200.00
+25/03/2026;FV JBGS 6081;24/05/2026;$ 924,292.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 924,292.25;$ 160.00
+31/03/2026;FV JBGS 6136;30/05/2026;$ 936,780.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 936,780.00;$ 154.00
+06/04/2026;FV JBGS 6161;05/06/2026;$ 288,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 288,000.00;$ 148.00
+14/04/2026;FV JBGS 6256;13/06/2026;$ 477,540.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 477,540.00;$ 140.00
+16/04/2026;FV JBGS 6279;15/06/2026;$ 615,712.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 615,712.50;$ 138.00
+Total Sucursal: Principal;;;$ 73,583,024.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 73,583,024.75;$ 0.00
+Total Tercero: DOTACIONES BM S.A.S.;;;$ 73,583,024.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 73,583,024.75;$ 0.00
+DSJ SUMINISTROS MEDICOS S.A.S. - NIT: 900579989-9;;;;;;;;;
+Sucursal: Principal - Direccion: CL 67 46  86 LC 1 - Ciudad: Barranquilla - Telefono: 0 - Email: contadsj@gmail.com;;;;;;;;;
+08/09/2026;FV JBGS 7608;08/10/2026;$ 2,982,158.30;$ 0.00;$ 2,982,158.30;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+26/09/2026;FV JBGS 7787;26/10/2026;$ 601,064.10;$ 0.00;$ 601,064.10;$ 0.00;$ 0.00;$ 0.00;$ 5.00
+19/10/2026;FV JBGS 7960;18/11/2026;$ 3,021,549.84;$ 3,021,549.84;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+19/10/2026;FV JBGS 7955;18/11/2026;$ 531,082.50;$ 531,082.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+Total Sucursal: Principal;;;$ 7,135,854.74;$ 3,552,632.34;$ 3,583,222.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: DSJ SUMINISTROS MEDICOS S.A.S.;;;$ 7,135,854.74;$ 3,552,632.34;$ 3,583,222.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+EDILSA BEATRIZ TORRES CANGA - CC: 36548580;;;;;;;;;
+Sucursal: Principal - Direccion: DG 6 A 5 105 BRR LAS PALMITAS - Ciudad: Ariguaní - Telefono: 3103521332 - Email: edilsato@hotmail.com;;;;;;;;;
+28/02/2025;SI  1;03/10/2024;$ 5,831,256.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,831,256.00;$ 758.00
+Total Sucursal: Principal;;;$ 5,831,256.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,831,256.00;$ 0.00
+Total Tercero: EDILSA BEATRIZ TORRES CANGA;;;$ 5,831,256.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,831,256.00;$ 0.00
+ELIZABETH HERNANDEZ SAENZ - CC: 22410663;;;;;;;;;
+Sucursal: Principal - Direccion: CR 44 72 107 - Ciudad: Barranquilla - Telefono: 3489194 - Email: laboratoriohansen@hotmail.com;;;;;;;;;
+16/10/2026;FV JBGS 7941;15/11/2026;$ 75,300.00;$ 75,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 15.00
+Total Sucursal: Principal;;;$ 75,300.00;$ 75,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ELIZABETH HERNANDEZ SAENZ;;;$ 75,300.00;$ 75,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+EVA EMPERATRIZ NEGRETTE GONZALEZ - CC: 50896151;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 11 W 18 56 - Ciudad: Montería - Telefono: 3012190064 - Email: guriguri22@hotmail.com;;;;;;;;;
+03/08/2026;FV JBGS 7225;04/08/2026;$ 4,773,107.50;$ 0.00;$ 0.00;$ 0.00;$ 4,773,107.50;$ 0.00;$ 88.00
+Total Sucursal: Principal ;;;$ 4,773,107.50;$ 0.00;$ 0.00;$ 0.00;$ 4,773,107.50;$ 0.00;$ 0.00
+Total Tercero: EVA EMPERATRIZ NEGRETTE GONZALEZ;;;$ 4,773,107.50;$ 0.00;$ 0.00;$ 0.00;$ 4,773,107.50;$ 0.00;$ 0.00
+FUNDACION A CORAZON ABIERTO POR SOLEDAD SIGLA FUCASOL - NIT: 900763296-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR 13 46 80 - Ciudad: Soledad - Telefono: 6053558076 - Email: fucasol@hotmail.com;;;;;;;;;
+28/10/2026;FV JBGS 8064;29/10/2026;$ 26,993.50;$ 0.00;$ 26,993.50;$ 0.00;$ 0.00;$ 0.00;$ 2.00
+Total Sucursal: Principal;;;$ 26,993.50;$ 0.00;$ 26,993.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: FUNDACION A CORAZON ABIERTO POR SOLEDAD SIGLA FUCASOL;;;$ 26,993.50;$ 0.00;$ 26,993.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+FUNDACION HOSPITAL UNIVERSIDAD DEL NORTE - NIT: 890112801-3;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 30 AUT AEROPUERTO ALD PARQUE MUVDI - Ciudad: Soledad - Telefono: 6053715540 - Email: fhun@hospuninorte.org;;;;;;;;;
+15/10/2026;FV JBGS 7929;14/12/2026;$ 4,077,500.00;$ 4,077,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 44.00
+Total Sucursal: Principal ;;;$ 4,077,500.00;$ 4,077,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: FUNDACION HOSPITAL UNIVERSIDAD DEL NORTE;;;$ 4,077,500.00;$ 4,077,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+FUNDACION MEDICA INTEGRAL DE LA COSTA LTDA. - NIT: 900098008-4;;;;;;;;;
+Sucursal: Principal - Direccion: CR  46  59 24 - Ciudad: Barranquilla - Telefono: 3315247 - Email: funmedic@hotmail.com;;;;;;;;;
+28/02/2025;SI  1;27/12/2024;$ 19,546,190.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 19,546,190.50;$ 673.00
+Total Sucursal: Principal;;;$ 19,546,190.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 19,546,190.50;$ 0.00
+Total Tercero: FUNDACION MEDICA INTEGRAL DE LA COSTA LTDA.;;;$ 19,546,190.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 19,546,190.50;$ 0.00
+GELUE NAYETH SANCHEZ LUGO - CC: 57419927;;;;;;;;;
+Sucursal: Principal - Direccion: CL 12 12 79 BRR CENTRO - Ciudad: Ciénaga - Telefono: 4100326 - Email: gesan17@hotmail.com;;;;;;;;;
+29/10/2026;FV JBGS 8081;28/11/2026;$ 793,385.00;$ 793,385.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 28.00
+Total Sucursal: Principal;;;$ 793,385.00;$ 793,385.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: GELUE NAYETH SANCHEZ LUGO;;;$ 793,385.00;$ 793,385.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+GLORIA     COMAS PEDROZO - CC: 42208081;;;;;;;;;
+Sucursal: Principal - Direccion: TRANSVERSAL 36 38 61 BARRIO LAS  FLORES - Ciudad: Corozal - Telefono: 3126160550 - Email: gbepe@hotmail.com;;;;;;;;;
+20/08/2026;FV JBGS 7402;19/09/2026;$ 695,251.00;$ 0.00;$ 0.00;$ 695,251.00;$ 0.00;$ 0.00;$ 42.00
+05/10/2026;FV JBGS 7852;04/11/2026;$ 631,875.50;$ 631,875.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 4.00
+Total Sucursal: Principal;;;$ 1,327,126.50;$ 631,875.50;$ 0.00;$ 695,251.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: GLORIA     COMAS PEDROZO;;;$ 1,327,126.50;$ 631,875.50;$ 0.00;$ 695,251.00;$ 0.00;$ 0.00;$ 0.00
+GREGORIO  JOSE  ORTIZ  PACHECO - CC: 6889194;;;;;;;;;
+Sucursal: Principal - Direccion: CR 7 A 10 36 - Ciudad: Fundación - Telefono: 3215648486 - Email: gregoriojose2019@gmail.com;;;;;;;;;
+05/02/2026;FV JBGS 5673;06/02/2026;$ 551,314.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 551,314.00;$ 267.00
+11/04/2026;FV JBGS 6238;12/04/2026;$ 293,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 293,000.00;$ 202.00
+22/06/2026;FV JBGS 6843;23/06/2026;$ 539,625.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 539,625.00;$ 130.00
+16/09/2026;FV JBGS 7675;17/09/2026;$ 582,200.00;$ 0.00;$ 0.00;$ 582,200.00;$ 0.00;$ 0.00;$ 44.00
+Total Sucursal: Principal;;;$ 1,966,139.00;$ 0.00;$ 0.00;$ 582,200.00;$ 0.00;$ 1,383,939.00;$ 0.00
+Total Tercero: GREGORIO  JOSE  ORTIZ  PACHECO;;;$ 1,966,139.00;$ 0.00;$ 0.00;$ 582,200.00;$ 0.00;$ 1,383,939.00;$ 0.00
+HENRY ANTONIO OLIVARES SOTO - CC: 78753221;;;;;;;;;
+Sucursal: Principal - Direccion: CR 7 25 02 LC 2 BRR CHUCHURUBI - Ciudad: Montería - Telefono: 7814447 - Email: serviciosintegralesbiomedicos@hotmail.com;;;;;;;;;
+28/02/2025;SI  1;10/07/2023;$ 1,050,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,050,000.00;$ 1,209.00
+28/02/2025;SI  1;06/07/2023;$ 1,245,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,245,000.00;$ 1,213.00
+28/02/2025;SI  1;11/06/2023;$ 1,050,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,050,000.00;$ 1,238.00
+28/02/2025;SI  1;10/06/2023;$ 2,092,020.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,092,020.00;$ 1,239.00
+28/02/2025;SI  1;20/04/2023;$ 1,575,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,575,000.00;$ 1,290.00
+28/02/2025;SI  1;25/03/2023;$ 3,425,234.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,425,234.00;$ 1,316.00
+28/02/2025;SI  1;24/03/2023;$ 3,312,956.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,312,956.00;$ 1,317.00
+28/02/2025;SI  1;17/03/2023;$ 4,319,150.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,319,150.00;$ 1,324.00
+28/02/2025;SI  1;17/03/2023;$ 40,263,980.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 40,263,980.00;$ 1,324.00
+28/02/2025;SI  1;25/02/2023;$ 1,802,928.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,802,928.00;$ 1,344.00
+28/02/2025;SI  1;17/02/2023;$ 1,261,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,261,400.00;$ 1,352.00
+28/02/2025;SI  1;12/02/2023;$ 2,062,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,062,800.00;$ 1,357.00
+28/02/2025;SI  1;09/02/2023;$ 3,243,925.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,243,925.00;$ 1,360.00
+Total Sucursal: Principal;;;$ 66,704,393.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 66,704,393.00;$ 0.00
+Total Tercero: HENRY ANTONIO OLIVARES SOTO;;;$ 66,704,393.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 66,704,393.00;$ 0.00
+HIJOS DE ENRIQUE ROCA S.A.S. - NIT: 890101806-2;;;;;;;;;
+Sucursal: Principal - Direccion: CR 53 59 204 - Ciudad: Barranquilla - Telefono: 3440906 - Email: contabilidad@hijoseroca.com;;;;;;;;;
+16/07/2026;FV JBGS 7089;15/08/2026;$ 1,331,235.50;$ 0.00;$ 0.00;$ 0.00;$ 1,331,235.50;$ 0.00;$ 77.00
+31/07/2026;FV JBGS 7207;30/08/2026;$ 107,000.00;$ 0.00;$ 0.00;$ 0.00;$ 107,000.00;$ 0.00;$ 62.00
+20/08/2026;FV JBGS 7404;19/09/2026;$ 346,400.00;$ 0.00;$ 0.00;$ 346,400.00;$ 0.00;$ 0.00;$ 42.00
+21/08/2026;FV JBGS 7424;20/09/2026;$ 183,900.00;$ 0.00;$ 0.00;$ 183,900.00;$ 0.00;$ 0.00;$ 41.00
+26/08/2026;FV JBGS 7469;25/09/2026;$ 100,000.00;$ 0.00;$ 0.00;$ 100,000.00;$ 0.00;$ 0.00;$ 36.00
+11/09/2026;FV JBGS 7629;11/10/2026;$ 330,160.00;$ 0.00;$ 330,160.00;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+18/09/2026;FV JBGS 7703;18/10/2026;$ 254,000.00;$ 0.00;$ 254,000.00;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+25/09/2026;FV JBGS 7777;25/10/2026;$ 59,500.00;$ 0.00;$ 59,500.00;$ 0.00;$ 0.00;$ 0.00;$ 6.00
+Total Sucursal: Principal;;;$ 2,712,195.50;$ 0.00;$ 643,660.00;$ 630,300.00;$ 1,438,235.50;$ 0.00;$ 0.00
+Total Tercero: HIJOS DE ENRIQUE ROCA S.A.S.;;;$ 2,712,195.50;$ 0.00;$ 643,660.00;$ 630,300.00;$ 1,438,235.50;$ 0.00;$ 0.00
+I.P.S CARRIAZO S.A.S - NIT: 901244357-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL  13  17 251 BARRIO LA LUCHA - Ciudad: Sincelejo - Telefono: 3128392114 - Email: labcarriazo2019@hotmail.com;;;;;;;;;
+09/05/2025;FV JBGS 3471;08/06/2025;$ 541,151.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 541,151.00;$ 510.00
+14/05/2025;FV JBGS 3519;13/06/2025;$ 575,700.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 575,700.00;$ 505.00
+22/05/2025;FV JBGS 3592;21/06/2025;$ 43,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 43,000.00;$ 497.00
+22/05/2025;FV JBGS 3590;21/06/2025;$ 2,930,294.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,930,294.50;$ 497.00
+27/05/2025;FV JBGS 3625;26/06/2025;$ 509,100.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 509,100.00;$ 492.00
+09/06/2025;FV JBGS 3713;09/07/2025;$ 585,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 585,000.00;$ 479.00
+26/07/2025;FV JBGS 4129;25/08/2025;$ 1,228,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,228,500.00;$ 432.00
+05/08/2025;FV JBGS 4214;04/09/2025;$ 628,192.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 628,192.50;$ 422.00
+06/08/2025;FV JBGS 4228;05/09/2025;$ 575,737.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 575,737.50;$ 421.00
+08/09/2025;FV JBGS 4507;08/10/2025;$ 920,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 920,400.00;$ 388.00
+Total Sucursal: Principal;;;$ 8,537,075.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 8,537,075.50;$ 0.00
+Total Tercero: I.P.S CARRIAZO S.A.S;;;$ 8,537,075.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 8,537,075.50;$ 0.00
+I.P.S INTEGRAL FUTURO LTDA - NIT: 900355031-7;;;;;;;;;
+Sucursal: Principal - Direccion: CR  12  22 E 34 BARIO SANTA CATALINA - Ciudad: Sincelejo - Telefono: 3013500387 - Email: ipsintegral7@hotmail.com;;;;;;;;;
+13/03/2026;FV JBGS 5990;12/04/2026;$ 7,425.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 7,425.50;$ 202.00
+31/08/2026;FV JBGS 7508;30/09/2026;$ 5,664,754.50;$ 0.00;$ 0.00;$ 5,664,754.50;$ 0.00;$ 0.00;$ 31.00
+Total Sucursal: Principal;;;$ 5,672,180.00;$ 0.00;$ 0.00;$ 5,664,754.50;$ 0.00;$ 7,425.50;$ 0.00
+Total Tercero: I.P.S INTEGRAL FUTURO LTDA;;;$ 5,672,180.00;$ 0.00;$ 0.00;$ 5,664,754.50;$ 0.00;$ 7,425.50;$ 0.00
+I.P.S. ASESORAMOS Y PROTEGEMOS SALUD OCUPACIONAL S.A.S - NIT: 900137719-0;;;;;;;;;
+Sucursal: Principal - Direccion: CR 14 13 B BIS 66 BRR OBRERO - Ciudad: Valledupar - Telefono: 3008185293 - Email: gerencia@aseprot.com;;;;;;;;;
+19/06/2026;FV JBGS 6837;19/07/2026;$ 1,419,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,419,600.00;$ 104.00
+11/09/2026;FV JBGS 7630;11/10/2026;$ 1,888,107.50;$ 0.00;$ 1,888,107.50;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+Total Sucursal: Principal;;;$ 3,307,707.50;$ 0.00;$ 1,888,107.50;$ 0.00;$ 0.00;$ 1,419,600.00;$ 0.00
+Total Tercero: I.P.S. ASESORAMOS Y PROTEGEMOS SALUD OCUPACIONAL S.A.S;;;$ 3,307,707.50;$ 0.00;$ 1,888,107.50;$ 0.00;$ 0.00;$ 1,419,600.00;$ 0.00
+I.P.S. LABORATORIO CLINICO ESPECIALIZADO ELSA MARTINEZ S.A.S. - NIT: 900301462-6;;;;;;;;;
+Sucursal: Principal - Direccion: CL 18 9 45 - Ciudad: Planeta Rica - Telefono: 3008375521 - Email: lab_elmar@hotmail.com;;;;;;;;;
+08/09/2026;FV JBGS 7602;08/10/2026;$ 263,340.00;$ 0.00;$ 263,340.00;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+30/09/2026;FV JBGS 7819;30/10/2026;$ 511,800.09;$ 0.00;$ 511,800.09;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+02/10/2026;FV JBGS 7837;01/11/2026;$ 17,060.00;$ 17,060.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+14/10/2026;FV JBGS 7920;13/11/2026;$ 376,852.00;$ 376,852.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+28/10/2026;FV JBGS 8071;27/11/2026;$ 1,536,708.00;$ 1,536,708.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 27.00
+Total Sucursal: Principal;;;$ 2,705,760.09;$ 1,930,620.00;$ 775,140.09;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: I.P.S. LABORATORIO CLINICO ESPECIALIZADO ELSA MARTINEZ S.A.S.;;;$ 2,705,760.09;$ 1,930,620.00;$ 775,140.09;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+I.P.S.I EREJEERIA WAYUU - NIT: 839000936-2;;;;;;;;;
+Sucursal: Principal - Direccion: CL  17  16 55 - Ciudad: Maicao - Telefono: 7255809 - Email: ipsierejeeriawayuu@gmail.com;;;;;;;;;
+10/09/2026;FV JBGS 7622;11/09/2026;$ 2,922,367.50;$ 0.00;$ 0.00;$ 2,922,367.50;$ 0.00;$ 0.00;$ 50.00
+15/09/2026;FV JBGS 7657;16/09/2026;$ 583,635.00;$ 0.00;$ 0.00;$ 583,635.00;$ 0.00;$ 0.00;$ 45.00
+30/09/2026;FV JBGS 7813;01/10/2026;$ 7,786,580.50;$ 0.00;$ 7,786,580.50;$ 0.00;$ 0.00;$ 0.00;$ 30.00
+05/10/2026;FV JBGS 7856;06/10/2026;$ 653,250.00;$ 0.00;$ 653,250.00;$ 0.00;$ 0.00;$ 0.00;$ 25.00
+Total Sucursal: Principal;;;$ 11,945,833.00;$ 0.00;$ 8,439,830.50;$ 3,506,002.50;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: I.P.S.I EREJEERIA WAYUU;;;$ 11,945,833.00;$ 0.00;$ 8,439,830.50;$ 3,506,002.50;$ 0.00;$ 0.00;$ 0.00
+INGENIERIA SEGURIDAD & SALUD OCUPACIONAL S.A.S. ISSO S.A.S. - NIT: 802020964-1;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 56  72  50 BRR EL PRADO - Ciudad: Barranquilla - Telefono: 6053459023 - Email: issoltda.contabilidad@gmail.com;;;;;;;;;
+08/10/2026;FV JBGS 7892;09/10/2026;$ 116,550.00;$ 0.00;$ 116,550.00;$ 0.00;$ 0.00;$ 0.00;$ 22.00
+Total Sucursal: Principal ;;;$ 116,550.00;$ 0.00;$ 116,550.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: INGENIERIA SEGURIDAD & SALUD OCUPACIONAL S.A.S. ISSO S.A.S.;;;$ 116,550.00;$ 0.00;$ 116,550.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+INVERSIONES AZALUD S.A,S - NIT: 900267064-2;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 19 28 C 25 - Ciudad: Santa Marta - Telefono: 4363616 - Email: proveedores@clinicabahia.com;;;;;;;;;
+11/08/2026;FV JBGS 7310;10/09/2026;$ 526,305.00;$ 0.00;$ 0.00;$ 526,305.00;$ 0.00;$ 0.00;$ 51.00
+14/08/2026;FV JBGS 7348;13/09/2026;$ 234,073.00;$ 0.00;$ 0.00;$ 234,073.00;$ 0.00;$ 0.00;$ 48.00
+18/08/2026;FV JBGS 7374;17/09/2026;$ 3,273,650.00;$ 0.00;$ 0.00;$ 3,273,650.00;$ 0.00;$ 0.00;$ 44.00
+20/08/2026;FV JBGS 7408;19/09/2026;$ 1,518,075.00;$ 0.00;$ 0.00;$ 1,518,075.00;$ 0.00;$ 0.00;$ 42.00
+01/09/2026;FV JBGS 7537;01/10/2026;$ 602,856.00;$ 0.00;$ 602,856.00;$ 0.00;$ 0.00;$ 0.00;$ 30.00
+14/09/2026;FV JBGS 7648;14/10/2026;$ 1,136,900.00;$ 0.00;$ 1,136,900.00;$ 0.00;$ 0.00;$ 0.00;$ 17.00
+14/10/2026;FV JBGS 7918;13/11/2026;$ 1,121,335.00;$ 1,121,335.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+Total Sucursal: Principal ;;;$ 8,413,194.00;$ 1,121,335.00;$ 1,739,756.00;$ 5,552,103.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: INVERSIONES AZALUD S.A,S;;;$ 8,413,194.00;$ 1,121,335.00;$ 1,739,756.00;$ 5,552,103.00;$ 0.00;$ 0.00;$ 0.00
+IPS LABORATORIO CLINICO SHAMALAB - NIT: 900361974-1;;;;;;;;;
+Sucursal: Principal - Direccion: CALLE 68 B   50-59 - Ciudad: Barranquilla - Telefono: 3201785 - Email: shamalab7@hotmail.com;;;;;;;;;
+11/09/2026;FV JBGS 7633;11/10/2026;$ 415,874.00;$ 0.00;$ 415,874.00;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+24/09/2026;FV JBGS 7772;24/10/2026;$ 185,926.00;$ 0.00;$ 185,926.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+24/09/2026;FV JBGS 7774;24/10/2026;$ 100,000.00;$ 0.00;$ 100,000.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+02/10/2026;FV JBGS 7844;01/11/2026;$ 298,200.00;$ 298,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+03/10/2026;FV JBGS 7850;02/11/2026;$ 101,745.00;$ 101,745.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 2.00
+13/10/2026;FV JBGS 7913;12/11/2026;$ 958,827.50;$ 958,827.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+19/10/2026;FV JBGS 7956;18/11/2026;$ 370,000.00;$ 370,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+20/10/2026;FV JBGS 7984;19/11/2026;$ 307,721.00;$ 307,721.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+27/10/2026;FV JBGS 8060;26/11/2026;$ 83,300.00;$ 83,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 26.00
+29/10/2026;FV JBGS 8085;28/11/2026;$ 995,865.00;$ 995,865.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 28.00
+Total Sucursal: Principal;;;$ 3,817,458.50;$ 3,115,658.50;$ 701,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: IPS LABORATORIO CLINICO SHAMALAB;;;$ 3,817,458.50;$ 3,115,658.50;$ 701,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+IPS PREVENTION MEDICINA LABORAL S.A.S. - NIT: 901873193-7;;;;;;;;;
+Sucursal: Principal IPS PREVENTION MEDICINA LABORAL S.A.S. - Direccion: CL 64 CR 53 36LO 105  - Ciudad: Barranquilla - Telefono: 3016695508 - Email: coordinadorasistencial@ipsprevention.com;;;;;;;;;
+22/09/2026;FV JBGS 7746;23/09/2026;$ 704,362.50;$ 0.00;$ 0.00;$ 704,362.50;$ 0.00;$ 0.00;$ 38.00
+23/09/2026;FV JBGS 7750;24/09/2026;$ 204,300.00;$ 0.00;$ 0.00;$ 204,300.00;$ 0.00;$ 0.00;$ 37.00
+23/10/2026;FV JBGS 8021;24/10/2026;$ 428,354.00;$ 0.00;$ 428,354.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+26/10/2026;FV JBGS 8038;27/10/2026;$ 408,170.00;$ 0.00;$ 408,170.00;$ 0.00;$ 0.00;$ 0.00;$ 4.00
+Total Sucursal: Principal IPS PREVENTION MEDICINA LABORAL S.A.S.;;;$ 1,745,186.50;$ 0.00;$ 836,524.00;$ 908,662.50;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: IPS PREVENTION MEDICINA LABORAL S.A.S.;;;$ 1,745,186.50;$ 0.00;$ 836,524.00;$ 908,662.50;$ 0.00;$ 0.00;$ 0.00
+IPS SAN ANTONIO S.A.S - NIT: 901493176-0;;;;;;;;;
+Sucursal: Principal - Direccion: CL 16 A 22 49 - Ciudad: Sincelejo - Telefono: 3116863710 - Email: ipssanantoniosas@gmail.com;;;;;;;;;
+10/08/2026;FV JBGS 7302;11/08/2026;$ 1,014,800.85;$ 0.00;$ 0.00;$ 0.00;$ 1,014,800.85;$ 0.00;$ 81.00
+18/08/2026;FV JBGS 7362;19/08/2026;$ 856,440.00;$ 0.00;$ 0.00;$ 0.00;$ 856,440.00;$ 0.00;$ 73.00
+31/08/2026;FV JBGS 7509;01/09/2026;$ 2,283,840.00;$ 0.00;$ 0.00;$ 2,283,840.00;$ 0.00;$ 0.00;$ 60.00
+22/09/2026;FV JBGS 7743;23/09/2026;$ 2,653,168.00;$ 0.00;$ 0.00;$ 2,653,168.00;$ 0.00;$ 0.00;$ 38.00
+19/10/2026;FV JBGS 7965;20/10/2026;$ 3,159,310.05;$ 0.00;$ 3,159,310.05;$ 0.00;$ 0.00;$ 0.00;$ 11.00
+26/10/2026;FV JBGS 8034;27/10/2026;$ 6,329,918.40;$ 0.00;$ 6,329,918.40;$ 0.00;$ 0.00;$ 0.00;$ 4.00
+Total Sucursal: Principal;;;$ 16,297,477.30;$ 0.00;$ 9,489,228.45;$ 4,937,008.00;$ 1,871,240.85;$ 0.00;$ 0.00
+Total Tercero: IPS SAN ANTONIO S.A.S;;;$ 16,297,477.30;$ 0.00;$ 9,489,228.45;$ 4,937,008.00;$ 1,871,240.85;$ 0.00;$ 0.00
+IPS SERVICIOCARDIOVASCULAR DEL CARIBE S.A.S. - NIT: 901269514-8;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 23 A 6 83 - Ciudad: Santa Marta - Telefono: 3105484328 - Email: admonsecv@gmail.com;;;;;;;;;
+07/02/2026;FV JBGS 5687;08/02/2026;$ 2,097,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,097,000.00;$ 265.00
+10/02/2026;FV JBGS 5712;11/02/2026;$ 1,398,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,398,000.00;$ 262.00
+01/04/2026;FV JBGS 6153;02/04/2026;$ 3,495,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,495,000.00;$ 212.00
+29/05/2026;FV JBGS 6647;28/06/2026;$ 1,606,813.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,606,813.00;$ 125.00
+10/06/2026;FV JBGS 6708;10/07/2026;$ 4,711,859.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,711,859.50;$ 113.00
+09/07/2026;FV JBGS 7007;08/08/2026;$ 2,796,000.00;$ 0.00;$ 0.00;$ 0.00;$ 2,796,000.00;$ 0.00;$ 84.00
+26/09/2026;FV JBGS 7786;26/10/2026;$ 3,611,500.00;$ 0.00;$ 3,611,500.00;$ 0.00;$ 0.00;$ 0.00;$ 5.00
+07/10/2026;FV JBGS 7881;06/11/2026;$ 1,699,865.00;$ 1,699,865.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+Total Sucursal: Principal ;;;$ 21,416,037.50;$ 1,699,865.00;$ 3,611,500.00;$ 0.00;$ 2,796,000.00;$ 13,308,672.50;$ 0.00
+Total Tercero: IPS SERVICIOCARDIOVASCULAR DEL CARIBE S.A.S.;;;$ 21,416,037.50;$ 1,699,865.00;$ 3,611,500.00;$ 0.00;$ 2,796,000.00;$ 13,308,672.50;$ 0.00
+IPS VITAL SALUD SAS - NIT: 900217580-8;;;;;;;;;
+Sucursal: Principal - Direccion: AV COLOMBIA CL  15  6 45 - Ciudad: Magangué - Telefono: 3116279036 - Email: fevitalsaludips@gmail.com;;;;;;;;;
+30/09/2025;FV JBGS 4693;30/10/2025;$ 203,980.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 203,980.00;$ 366.00
+18/06/2026;FV JBGS 6821;18/07/2026;$ 1,585,350.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,585,350.00;$ 105.00
+18/06/2026;FV JBGS 6823;18/07/2026;$ 1,446,900.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,446,900.00;$ 105.00
+24/06/2026;FV JBGS 6875;24/07/2026;$ 1,795,365.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,795,365.00;$ 99.00
+30/06/2026;FV JBGS 6909;30/07/2026;$ 664,020.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 664,020.00;$ 93.00
+03/07/2026;FV JBGS 6958;02/08/2026;$ 442,680.00;$ 0.00;$ 0.00;$ 0.00;$ 442,680.00;$ 0.00;$ 90.00
+21/07/2026;FV JBGS 7108;20/08/2026;$ 2,245,950.50;$ 0.00;$ 0.00;$ 0.00;$ 2,245,950.50;$ 0.00;$ 72.00
+24/08/2026;FV JBGS 7432;23/09/2026;$ 2,231,190.00;$ 0.00;$ 0.00;$ 2,231,190.00;$ 0.00;$ 0.00;$ 38.00
+26/08/2026;FV JBGS 7471;25/09/2026;$ 653,445.00;$ 0.00;$ 0.00;$ 653,445.00;$ 0.00;$ 0.00;$ 36.00
+22/09/2026;FV JBGS 7727;22/10/2026;$ 2,173,650.00;$ 0.00;$ 2,173,650.00;$ 0.00;$ 0.00;$ 0.00;$ 9.00
+Total Sucursal: Principal;;;$ 13,442,530.50;$ 0.00;$ 2,173,650.00;$ 2,884,635.00;$ 2,688,630.50;$ 5,695,615.00;$ 0.00
+Total Tercero: IPS VITAL SALUD SAS;;;$ 13,442,530.50;$ 0.00;$ 2,173,650.00;$ 2,884,635.00;$ 2,688,630.50;$ 5,695,615.00;$ 0.00
+JAVIER ENRIQUE BENAVIDES GONZALEZ - CC: 8733496;;;;;;;;;
+Sucursal: CASA - Direccion: CR 37 58 81 CA 7 - Ciudad: Barranquilla - Telefono: 3116926563 - Email: ennakore@hotmail.com;;;;;;;;;
+28/01/2026;FV JBGS 5575;27/02/2026;$ 1,907,880.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,907,880.00;$ 246.00
+23/02/2026;FV JBGS 5813;25/03/2026;$ 308,650.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 308,650.00;$ 220.00
+31/03/2026;FV JBGS 6143;30/04/2026;$ 532,910.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 532,910.00;$ 184.00
+29/05/2026;FV JBGS 6657;28/06/2026;$ 1,539,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,539,000.00;$ 125.00
+24/07/2026;FV JBGS 7151;23/08/2026;$ 26,866.00;$ 0.00;$ 0.00;$ 0.00;$ 26,866.00;$ 0.00;$ 69.00
+30/10/2026;FV JBGS 8096;29/11/2026;$ 136,410.00;$ 136,410.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 29.00
+Total Sucursal: CASA;;;$ 4,451,716.00;$ 136,410.00;$ 0.00;$ 0.00;$ 26,866.00;$ 4,288,440.00;$ 0.00
+Total Tercero: JAVIER ENRIQUE BENAVIDES GONZALEZ;;;$ 4,451,716.00;$ 136,410.00;$ 0.00;$ 0.00;$ 26,866.00;$ 4,288,440.00;$ 0.00
+JORGE CRISTOBAL PATERNINA LEON - CC: 73100533;;;;;;;;;
+Sucursal: Principal - Direccion: CENTRO CL DEL COLEGIO 34 50 OF 206 - Ciudad: Cartagena De Indias - Telefono: 3116833202 - Email: sulaboratorioclinico@hotmail.com;;;;;;;;;
+03/07/2026;FV JBGS 6942;02/08/2026;$ 908,200.00;$ 0.00;$ 0.00;$ 0.00;$ 908,200.00;$ 0.00;$ 90.00
+21/07/2026;FV JBGS 7111;20/08/2026;$ 804,000.00;$ 0.00;$ 0.00;$ 0.00;$ 804,000.00;$ 0.00;$ 72.00
+06/08/2026;FV JBGS 7283;05/09/2026;$ 1,495,993.00;$ 0.00;$ 0.00;$ 1,495,993.00;$ 0.00;$ 0.00;$ 56.00
+19/08/2026;FV JBGS 7388;18/09/2026;$ 364,250.00;$ 0.00;$ 0.00;$ 364,250.00;$ 0.00;$ 0.00;$ 43.00
+30/09/2026;FV JBGS 7815;30/10/2026;$ 1,068,000.00;$ 0.00;$ 1,068,000.00;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+Total Sucursal: Principal;;;$ 4,640,443.00;$ 0.00;$ 1,068,000.00;$ 1,860,243.00;$ 1,712,200.00;$ 0.00;$ 0.00
+Total Tercero: JORGE CRISTOBAL PATERNINA LEON;;;$ 4,640,443.00;$ 0.00;$ 1,068,000.00;$ 1,860,243.00;$ 1,712,200.00;$ 0.00;$ 0.00
+JOSE MANUEL TUIRAN HOYOS - CC: 15668320;;;;;;;;;
+Sucursal: Principal - Direccion: CL  23  5 56 BARRIO KENNEDY - Ciudad: Caucasia - Telefono: 3218006503 - Email: labclinicocentral@hotmail.com;;;;;;;;;
+25/05/2026;FV JBGS 6592;24/06/2026;$ 1,986,900.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,986,900.00;$ 129.00
+27/05/2026;FV JBGS 6619;26/06/2026;$ 3,694,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,694,800.00;$ 127.00
+12/06/2026;FV JBGS 6765;12/07/2026;$ 430,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 430,000.00;$ 111.00
+18/06/2026;FV JBGS 6815;18/07/2026;$ 3,511,455.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,511,455.00;$ 105.00
+21/07/2026;FV JBGS 7110;20/08/2026;$ 7,221,200.00;$ 0.00;$ 0.00;$ 0.00;$ 7,221,200.00;$ 0.00;$ 72.00
+27/07/2026;FV JBGS 7161;26/08/2026;$ 3,292,800.00;$ 0.00;$ 0.00;$ 0.00;$ 3,292,800.00;$ 0.00;$ 66.00
+19/08/2026;FV JBGS 7387;18/09/2026;$ 2,202,000.00;$ 0.00;$ 0.00;$ 2,202,000.00;$ 0.00;$ 0.00;$ 43.00
+Total Sucursal: Principal;;;$ 22,339,155.00;$ 0.00;$ 0.00;$ 2,202,000.00;$ 10,514,000.00;$ 9,623,155.00;$ 0.00
+Total Tercero: JOSE MANUEL TUIRAN HOYOS;;;$ 22,339,155.00;$ 0.00;$ 0.00;$ 2,202,000.00;$ 10,514,000.00;$ 9,623,155.00;$ 0.00
+KAROL MIOZOTIS GARCIA BONILLA - CC: 37725608;;;;;;;;;
+Sucursal: Principal - Direccion: CL 14B  12 A   09 - Ciudad: Riohacha - Telefono: 6057274058 - Email: laboratoriokgb@gmail.com;;;;;;;;;
+26/10/2026;FV JBGS 8042;25/11/2026;$ 2,457,815.00;$ 2,457,815.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+28/10/2026;FV JBGS 8070;27/11/2026;$ 693,500.00;$ 693,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 27.00
+Total Sucursal: Principal;;;$ 3,151,315.00;$ 3,151,315.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: KAROL MIOZOTIS GARCIA BONILLA;;;$ 3,151,315.00;$ 3,151,315.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+KELLYLAB LTDA - NIT: 800065718-0;;;;;;;;;
+Sucursal: Principal - Direccion: CL 30 4 62 - Ciudad: Montería - Telefono: 7824424 - Email: kellylabltda@hotmail.com;;;;;;;;;
+07/10/2026;FV JBGS 7882;06/11/2026;$ 2,797,817.50;$ 2,797,817.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+29/10/2026;FV JBGS 8088;28/11/2026;$ 2,778,750.00;$ 2,778,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 28.00
+Total Sucursal: Principal;;;$ 5,576,567.50;$ 5,576,567.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: KELLYLAB LTDA;;;$ 5,576,567.50;$ 5,576,567.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+L & M GROUPE DE LA COSTA SAS - NIT: 901123807-3;;;;;;;;;
+Sucursal: Principal - Direccion: CL  32  9 45 OF 1201 ED.BANCO DEL ESTADO BARRIO CENTRO - Ciudad: Cartagena De Indias - Telefono: 6056527641 - Email: contabilidad@lymgroupe.com;;;;;;;;;
+13/10/2026;FV JBGS 7912;11/01/2027;$ 1,882,927.50;$ 1,882,927.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 72.00
+15/10/2026;FV JBGS 7928;13/01/2027;$ 348,300.00;$ 348,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 74.00
+16/10/2026;NCV DMCL 236;14/01/2027;-$ 807,719.25;-$ 807,719.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 75.00
+16/10/2026;NCV DMCL 235;14/01/2027;-$ 403,860.00;-$ 403,860.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 75.00
+19/10/2026;FV JBGS 7963;17/01/2027;$ 53,312.00;$ 53,312.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 78.00
+21/10/2026;FV JBGS 7993;19/01/2027;$ 162,500.00;$ 162,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 80.00
+22/10/2026;FV JBGS 8004;20/01/2027;$ 2,465,140.00;$ 2,465,140.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 81.00
+27/10/2026;FV JBGS 8049;25/01/2027;$ 28,300.00;$ 28,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 86.00
+27/10/2026;FV JBGS 8058;25/01/2027;$ 493,497.00;$ 493,497.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 86.00
+Total Sucursal: Principal;;;$ 4,222,397.25;$ 4,222,397.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: L & M GROUPE DE LA COSTA SAS;;;$ 4,222,397.25;$ 4,222,397.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LA PHARMA S.A.S. - NIT: 901388979-9;;;;;;;;;
+Sucursal: Principal - Direccion: CALLE 68B  50-59 - Ciudad: Barranquilla - Telefono: 3053333819 - Email: lapharma.sas@gmail.com;;;;;;;;;
+11/09/2026;FV JBGS 7640;11/10/2026;$ 12,188.25;$ 0.00;$ 12,188.25;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+29/09/2026;FV JBGS 7798;29/10/2026;$ 98,000.00;$ 0.00;$ 98,000.00;$ 0.00;$ 0.00;$ 0.00;$ 2.00
+19/10/2026;FV JBGS 7958;18/11/2026;$ 170,000.00;$ 170,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+Total Sucursal: Principal;;;$ 280,188.25;$ 170,000.00;$ 110,188.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LA PHARMA S.A.S.;;;$ 280,188.25;$ 170,000.00;$ 110,188.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO AMMA S.A.S - NIT: 901489727-3;;;;;;;;;
+Sucursal: Principal - Direccion: CL  10  10 90 P 2 - Ciudad: Riohacha - Telefono: 3003256406 - Email: labanamendoza@gmail.com;;;;;;;;;
+07/10/2026;FV JBGS 7880;06/11/2026;$ 4,345,450.00;$ 4,345,450.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+Total Sucursal: Principal;;;$ 4,345,450.00;$ 4,345,450.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO AMMA S.A.S;;;$ 4,345,450.00;$ 4,345,450.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO BIOCLINICO HERNANDEZ BRUGES LIMITADA - NIT: 800092330-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL  13  20 47 - Ciudad: Fonseca - Telefono: 3004857557 - Email: cielomarbrug@hotmail.com;;;;;;;;;
+28/02/2025;SI  1;22/03/2025;$ 747,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 747,000.00;$ 588.00
+14/04/2025;FV JBGS 3307;14/05/2025;$ 1,484,643.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,484,643.00;$ 535.00
+30/04/2025;FV JBGS 3416;30/05/2025;$ 1,243,704.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,243,704.00;$ 519.00
+20/05/2025;FV JBGS 3564;19/06/2025;$ 1,514,366.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,514,366.00;$ 499.00
+29/07/2025;FV JBGS 4149;28/08/2025;$ 2,647,265.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,647,265.40;$ 429.00
+06/08/2025;FV JBGS 4225;05/09/2025;$ 537,225.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 537,225.00;$ 421.00
+Total Sucursal: Principal;;;$ 8,174,203.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 8,174,203.40;$ 0.00
+Total Tercero: LABORATORIO BIOCLINICO HERNANDEZ BRUGES LIMITADA;;;$ 8,174,203.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 8,174,203.40;$ 0.00
+LABORATORIO CLINICA DE VARICES S.A.S. - NIT: 900358086-5;;;;;;;;;
+Sucursal: Principal - Direccion: CL 16 A 22 41 - Ciudad: Sincelejo - Telefono: 3013960414 - Email: laboratorioclinicadevaricessas@gmail.com;;;;;;;;;
+08/10/2026;FV JBGS 7888;07/11/2026;$ 1,911,390.00;$ 1,911,390.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 7.00
+Total Sucursal: Principal;;;$ 1,911,390.00;$ 1,911,390.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICA DE VARICES S.A.S.;;;$ 1,911,390.00;$ 1,911,390.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO ANA MED LTDA - NIT: 890116972-2;;;;;;;;;
+Sucursal: Principal - Direccion: CR 47 82 76 - Ciudad: Barranquilla - Telefono: 3106317186 - Email: laboratorio@anamed.com.co;;;;;;;;;
+16/09/2025;FV JBGS 4580;16/09/2025;$ 2,366,679.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,366,679.40;$ 410.00
+Total Sucursal: Principal;;;$ 2,366,679.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,366,679.40;$ 0.00
+Total Tercero: LABORATORIO CLINICO ANA MED LTDA;;;$ 2,366,679.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,366,679.40;$ 0.00
+LABORATORIO CLINICO BACTERIOLOGICO FLEMING DE MAGANGUÉ EU - NIT: 900024817-9;;;;;;;;;
+Sucursal: Principal - Direccion: BARRIO CORDOBA CL  16  6A 88 - Ciudad: Magangué - Telefono: 6878949 - Email: labflemingmagangue@gmail.com;;;;;;;;;
+01/10/2026;FV JBGS 7832;31/10/2026;$ 473,800.00;$ 473,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Sucursal: Principal;;;$ 473,800.00;$ 473,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO BACTERIOLOGICO FLEMING DE MAGANGUÉ EU;;;$ 473,800.00;$ 473,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO BIOLUZ LTDA - NIT: 900109371-2;;;;;;;;;
+Sucursal: Principal - Direccion: CL 22 14 70 - Ciudad: Santa Marta - Telefono: 3008354686 - Email: laboratorioclinicobioluz@hotmail.com;;;;;;;;;
+10/10/2026;FV JBGS 7902;09/11/2026;$ 478,266.00;$ 478,266.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 9.00
+26/10/2026;FV JBGS 8044;25/11/2026;$ 437,550.00;$ 437,550.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+30/10/2026;FV JBGS 8095;29/11/2026;$ 402,062.00;$ 402,062.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 29.00
+Total Sucursal: Principal;;;$ 1,317,878.00;$ 1,317,878.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO BIOLUZ LTDA;;;$ 1,317,878.00;$ 1,317,878.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO CENTRAL DE REFERENCIA S.A.S. - NIT: 900752752-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL 38 66 A 103 - Ciudad: Medellín - Telefono: 3004894122 - Email: contabilidad@centraldereferencia.com;;;;;;;;;
+18/09/2025;FV JBGS 4604;19/09/2025;$ 4,729,187.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,729,187.50;$ 407.00
+06/10/2025;FV JBGS 4741;07/10/2025;$ 5,587,237.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,587,237.50;$ 389.00
+Total Sucursal: Principal;;;$ 10,316,425.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 10,316,425.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO CENTRAL DE REFERENCIA S.A.S.;;;$ 10,316,425.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 10,316,425.00;$ 0.00
+LABORATORIO CLINICO CLARET ARIÑO GARCIA SAS - NIT: 900541416-6;;;;;;;;;
+Sucursal: Principal - Direccion: CL  11  8 79 ED SOA OF 201 BARRIO  VALITO - Ciudad: Valledupar - Telefono: 3106016094 - Email: recepcionfacturaslccag@recepcion.alegra.com;;;;;;;;;
+02/10/2026;FV JBGS 7842;01/11/2026;$ 2,792,155.50;$ 2,792,155.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+Total Sucursal: Principal;;;$ 2,792,155.50;$ 2,792,155.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO CLARET ARIÑO GARCIA SAS;;;$ 2,792,155.50;$ 2,792,155.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO CLINICA GENERAL DEL  NORTE SAS - NIT: 802003408-4;;;;;;;;;
+Sucursal: Principal - Direccion: CL  70  48 55 - Ciudad: Barranquilla - Telefono: 3589487 - Email: 802003408@factureinbox.co;;;;;;;;;
+20/03/2026;FV JBGS 6054;19/04/2026;$ 3,423,520.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,423,520.50;$ 195.00
+21/03/2026;FV JBGS 6061;20/04/2026;$ 9,575,212.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 9,575,212.50;$ 194.00
+24/03/2026;FV JBGS 6074;23/04/2026;$ 919,425.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 919,425.00;$ 191.00
+27/03/2026;FV JBGS 6113;27/04/2026;$ 6,028,837.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 6,028,837.50;$ 187.00
+27/03/2026;FV JBGS 6102;26/04/2026;$ 3,754,389.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,754,389.50;$ 188.00
+28/03/2026;FV JBGS 6115;27/04/2026;$ 226,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 226,200.00;$ 187.00
+28/03/2026;FV JBGS 6121;27/04/2026;$ 11,703,037.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 11,703,037.50;$ 187.00
+06/04/2026;FV JBGS 6169;06/05/2026;$ 221,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 221,400.00;$ 178.00
+06/04/2026;FV JBGS 6168;06/05/2026;$ 447,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 447,600.00;$ 178.00
+06/04/2026;FV JBGS 6165;06/05/2026;$ 539,427.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 539,427.00;$ 178.00
+07/04/2026;FV JBGS 6185;07/05/2026;$ 26,283,339.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 26,283,339.00;$ 177.00
+09/04/2026;FV JBGS 6204;09/05/2026;$ 148,274.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 148,274.00;$ 175.00
+10/04/2026;FV JBGS 6226;10/05/2026;$ 1,005,495.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,005,495.00;$ 174.00
+10/04/2026;FV JBGS 6225;10/05/2026;$ 668,655.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 668,655.00;$ 174.00
+13/04/2026;FV JBGS 6252;13/05/2026;$ 399,602.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 399,602.00;$ 171.00
+13/04/2026;FV JBGS 6240;13/05/2026;$ 7,708,806.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 7,708,806.00;$ 171.00
+14/04/2026;FV JBGS 6254;14/05/2026;$ 539,427.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 539,427.00;$ 170.00
+16/04/2026;FV JBGS 6277;16/05/2026;$ 1,015,755.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,015,755.00;$ 168.00
+17/04/2026;FV JBGS 6285;17/05/2026;$ 1,170,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,170,000.00;$ 167.00
+18/04/2026;FV JBGS 6290;18/05/2026;$ 529,132.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 529,132.50;$ 166.00
+20/04/2026;FV JBGS 6295;20/05/2026;$ 148,274.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 148,274.00;$ 164.00
+22/04/2026;FV JBGS 6323;22/05/2026;$ 226,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 226,200.00;$ 162.00
+23/04/2026;FV JBGS 6345;23/05/2026;$ 3,796,485.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,796,485.00;$ 161.00
+24/04/2026;FV JBGS 6347;24/05/2026;$ 1,698,303.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,698,303.50;$ 160.00
+28/04/2026;FV JBGS 6372;28/05/2026;$ 1,541,295.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,541,295.00;$ 156.00
+28/04/2026;FV JBGS 6369;28/05/2026;$ 4,732,446.85;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,732,446.85;$ 156.00
+29/04/2026;FV JBGS 6377;29/05/2026;$ 10,956,330.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 10,956,330.00;$ 155.00
+04/05/2026;FV JBGS 6408;04/06/2026;$ 95,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 95,200.00;$ 149.00
+15/05/2026;FV JBGS 6522;14/06/2026;$ 9,718,602.30;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 9,718,602.30;$ 139.00
+29/05/2026;FV JBGS 6646;28/06/2026;$ 694,960.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 694,960.00;$ 125.00
+02/06/2026;FV JBGS 6681;02/07/2026;$ 4,921,568.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,921,568.00;$ 121.00
+02/06/2026;FV JBGS 6679;02/07/2026;$ 555,180.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 555,180.00;$ 121.00
+02/06/2026;FV JBGS 6678;02/07/2026;$ 1,156,625.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,156,625.00;$ 121.00
+10/06/2026;FV JBGS 6711;10/07/2026;$ 1,637,991.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,637,991.00;$ 113.00
+11/06/2026;FV JBGS 6761;11/07/2026;$ 1,574,370.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,574,370.00;$ 112.00
+12/06/2026;FV JBGS 6764;12/07/2026;$ 4,746,817.22;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,746,817.22;$ 111.00
+17/06/2026;FV JBGS 6803;17/07/2026;$ 1,577,702.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,577,702.00;$ 106.00
+18/06/2026;FV JBGS 6817;18/07/2026;$ 5,347,674.88;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 5,347,674.88;$ 105.00
+22/06/2026;FV JBGS 6844;22/07/2026;$ 348,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 348,600.00;$ 101.00
+26/06/2026;FV JBGS 6899;26/07/2026;$ 10,908,019.40;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 10,908,019.40;$ 97.00
+26/06/2026;FV JBGS 6887;26/07/2026;$ 938,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 938,750.00;$ 97.00
+03/07/2026;FV JBGS 6950;02/08/2026;$ 2,142,994.80;$ 0.00;$ 0.00;$ 0.00;$ 2,142,994.80;$ 0.00;$ 90.00
+03/07/2026;FV JBGS 6944;02/08/2026;$ 2,127,825.00;$ 0.00;$ 0.00;$ 0.00;$ 2,127,825.00;$ 0.00;$ 90.00
+03/07/2026;FV JBGS 6951;02/08/2026;$ 770,647.50;$ 0.00;$ 0.00;$ 0.00;$ 770,647.50;$ 0.00;$ 90.00
+03/07/2026;FV JBGS 6941;02/08/2026;$ 10,859,483.00;$ 0.00;$ 0.00;$ 0.00;$ 10,859,483.00;$ 0.00;$ 90.00
+07/07/2026;FV JBGS 6979;07/08/2026;$ 148,274.00;$ 0.00;$ 0.00;$ 0.00;$ 148,274.00;$ 0.00;$ 85.00
+07/07/2026;FV JBGS 6980;07/08/2026;$ 569,772.00;$ 0.00;$ 0.00;$ 0.00;$ 569,772.00;$ 0.00;$ 85.00
+08/07/2026;FV JBGS 6988;07/08/2026;$ 2,385,306.00;$ 0.00;$ 0.00;$ 0.00;$ 2,385,306.00;$ 0.00;$ 85.00
+11/07/2026;FV JBGS 7032;10/08/2026;$ 5,292,787.50;$ 0.00;$ 0.00;$ 0.00;$ 5,292,787.50;$ 0.00;$ 82.00
+14/07/2026;FV JBGS 7034;13/08/2026;$ 543,757.50;$ 0.00;$ 0.00;$ 0.00;$ 543,757.50;$ 0.00;$ 79.00
+16/07/2026;FV JBGS 7081;15/08/2026;$ 822,937.00;$ 0.00;$ 0.00;$ 0.00;$ 822,937.00;$ 0.00;$ 77.00
+16/07/2026;FV JBGS 7085;15/08/2026;$ 1,313,895.75;$ 0.00;$ 0.00;$ 0.00;$ 1,313,895.75;$ 0.00;$ 77.00
+16/07/2026;FV JBGS 7090;16/08/2026;$ 338,000.00;$ 0.00;$ 0.00;$ 0.00;$ 338,000.00;$ 0.00;$ 76.00
+16/07/2026;FV JBGS 7087;15/08/2026;$ 346,800.00;$ 0.00;$ 0.00;$ 0.00;$ 346,800.00;$ 0.00;$ 77.00
+16/07/2026;FV JBGS 7077;15/08/2026;$ 210,600.00;$ 0.00;$ 0.00;$ 0.00;$ 210,600.00;$ 0.00;$ 77.00
+23/07/2026;FV JBGS 7137;23/08/2026;$ 1,737,000.00;$ 0.00;$ 0.00;$ 0.00;$ 1,737,000.00;$ 0.00;$ 69.00
+23/07/2026;FV JBGS 7136;22/08/2026;$ 4,313,550.00;$ 0.00;$ 0.00;$ 0.00;$ 4,313,550.00;$ 0.00;$ 70.00
+23/07/2026;FV JBGS 7134;22/08/2026;$ 271,500.00;$ 0.00;$ 0.00;$ 0.00;$ 271,500.00;$ 0.00;$ 70.00
+23/07/2026;FV JBGS 7140;22/08/2026;$ 1,817,508.00;$ 0.00;$ 0.00;$ 0.00;$ 1,817,508.00;$ 0.00;$ 70.00
+23/07/2026;FV JBGS 7133;22/08/2026;$ 586,408.88;$ 0.00;$ 0.00;$ 0.00;$ 586,408.88;$ 0.00;$ 70.00
+27/07/2026;FV JBGS 7165;26/08/2026;$ 326,400.00;$ 0.00;$ 0.00;$ 0.00;$ 326,400.00;$ 0.00;$ 66.00
+29/07/2026;FV JBGS 7182;28/08/2026;$ 1,014,390.00;$ 0.00;$ 0.00;$ 0.00;$ 1,014,390.00;$ 0.00;$ 64.00
+29/07/2026;FV JBGS 7189;28/08/2026;$ 859,537.00;$ 0.00;$ 0.00;$ 0.00;$ 859,537.00;$ 0.00;$ 64.00
+03/08/2026;FV JBGS 7239;03/09/2026;$ 10,703,616.00;$ 0.00;$ 0.00;$ 10,703,616.00;$ 0.00;$ 0.00;$ 58.00
+04/08/2026;FV JBGS 7251;03/09/2026;$ 8,847,107.00;$ 0.00;$ 0.00;$ 8,847,107.00;$ 0.00;$ 0.00;$ 58.00
+04/08/2026;FV JBGS 7252;03/09/2026;$ 846,568.13;$ 0.00;$ 0.00;$ 846,568.13;$ 0.00;$ 0.00;$ 58.00
+06/08/2026;FV JBGS 7284;06/09/2026;$ 83,300.00;$ 0.00;$ 0.00;$ 83,300.00;$ 0.00;$ 0.00;$ 55.00
+10/08/2026;FV JBGS 7298;09/09/2026;$ 8,865,938.00;$ 0.00;$ 0.00;$ 8,865,938.00;$ 0.00;$ 0.00;$ 52.00
+18/08/2026;FV JBGS 7357;17/09/2026;$ 3,773,811.00;$ 0.00;$ 0.00;$ 3,773,811.00;$ 0.00;$ 0.00;$ 44.00
+21/08/2026;FV JBGS 7417;20/09/2026;$ 4,017,321.00;$ 0.00;$ 0.00;$ 4,017,321.00;$ 0.00;$ 0.00;$ 41.00
+27/08/2026;FV JBGS 7488;26/09/2026;$ 15,149,025.50;$ 0.00;$ 0.00;$ 15,149,025.50;$ 0.00;$ 0.00;$ 35.00
+08/09/2026;FV JBGS 7598;08/10/2026;$ 13,393,106.00;$ 0.00;$ 13,393,106.00;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+18/09/2026;FV JBGS 7697;18/10/2026;$ 8,498,770.50;$ 0.00;$ 8,498,770.50;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+23/09/2026;FV JBGS 7752;23/10/2026;$ 1,986,838.50;$ 0.00;$ 1,986,838.50;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+02/10/2026;FV JBGS 7839;01/11/2026;$ 12,806,565.50;$ 12,806,565.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+02/10/2026;FV JBGS 7843;01/11/2026;$ 770,647.50;$ 770,647.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+03/10/2026;FV JBGS 7848;02/11/2026;$ 9,206,134.50;$ 9,206,134.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 2.00
+06/10/2026;FV JBGS 7871;05/11/2026;$ 14,591,461.50;$ 14,591,461.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 5.00
+10/10/2026;FV JBGS 7901;09/11/2026;$ 4,435,200.00;$ 4,435,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 9.00
+14/10/2026;NCV DMCL 234;13/11/2026;-$ 988,650.00;-$ 988,650.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+16/10/2026;FV JBGS 7944;15/11/2026;$ 3,696,000.00;$ 3,696,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 15.00
+21/10/2026;FV JBGS 7989;20/11/2026;$ 38,740,122.84;$ 38,740,122.84;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+21/10/2026;FV JBGS 7997;20/11/2026;$ 508,915.00;$ 508,915.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+21/10/2026;FV JBGS 7994;20/11/2026;$ 2,455,514.88;$ 2,455,514.88;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+26/10/2026;FV JBGS 8039;26/11/2026;$ 148,274.00;$ 148,274.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 26.00
+29/10/2026;FV JBGS 8087;28/11/2026;$ 6,876,292.50;$ 6,876,292.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 28.00
+Total Sucursal: Principal;;;$ 351,840,182.93;$ 93,246,478.22;$ 23,878,715.00;$ 52,286,686.63;$ 38,799,373.93;$ 143,628,929.15;$ 0.00
+Total Tercero: LABORATORIO CLINICO CLINICA GENERAL DEL  NORTE SAS;;;$ 351,840,182.93;$ 93,246,478.22;$ 23,878,715.00;$ 52,286,686.63;$ 38,799,373.93;$ 143,628,929.15;$ 0.00
+LABORATORIO CLINICO CRISTIAM GRAM I.P.S. S.A.S. - NIT: 900373544-1;;;;;;;;;
+Sucursal: Principal - Direccion: TV 18  20   94 LC 110 ED CENTRO MEDICO PENTA - Ciudad: Valledupar - Telefono: 5898015 - Email: compras@labcristiamgram.com;;;;;;;;;
+24/08/2026;FV JBGS 7434;23/10/2026;$ 25,709.00;$ 0.00;$ 25,709.00;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+27/10/2026;FV JBGS 8059;26/12/2026;$ 1,864,000.00;$ 1,864,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 56.00
+Total Sucursal: Principal;;;$ 1,889,709.00;$ 1,864,000.00;$ 25,709.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO CRISTIAM GRAM I.P.S. S.A.S.;;;$ 1,889,709.00;$ 1,864,000.00;$ 25,709.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO DUNALAB IPS S.A.S. - NIT: 900517512-4;;;;;;;;;
+Sucursal: Principal - Direccion: CR 14 17 24 - Ciudad: Montería - Telefono: 7830330 - Email: contadores.dian@outlook.com;;;;;;;;;
+28/02/2025;SI  1;31/07/2023;$ 861,065.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 861,065.00;$ 1,188.00
+28/02/2025;SI  1;28/04/2023;$ 400,435.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 400,435.00;$ 1,282.00
+28/02/2025;SI  1;08/09/2021;$ 7,800,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 7,800,000.00;$ 1,879.00
+28/02/2025;SI  1;23/06/2021;$ 1,486,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,486,250.00;$ 1,956.00
+28/02/2025;SI  1;13/02/2022;$ 485,520.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 485,520.00;$ 1,721.00
+28/02/2025;SI  1;15/01/2022;$ 1,047,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,047,200.00;$ 1,750.00
+28/02/2025;SI  1;06/11/2021;$ 2,925,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,925,000.00;$ 1,820.00
+Total Sucursal: Principal;;;$ 15,005,470.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 15,005,470.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO DUNALAB IPS S.A.S.;;;$ 15,005,470.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 15,005,470.00;$ 0.00
+LABORATORIO CLINICO ESPECIALIZADO SANIDAD S.A.S - NIT: 901953855-8;;;;;;;;;
+Sucursal: Principal  - Direccion: BARRIO PIE DE LA POPA CL 29 B 20A-39 - Ciudad: Cartagena De Indias - Telefono: 3145230190 - Email: lizmercado10@gmail.com;;;;;;;;;
+23/10/2025;FV JBGS 4888;21/01/2026;$ 12,594,512.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 12,594,512.00;$ 283.00
+24/10/2025;FV JBGS 4901;22/01/2026;$ 570,570.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 570,570.00;$ 282.00
+Total Sucursal: Principal ;;;$ 13,165,082.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 13,165,082.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO ESPECIALIZADO SANIDAD S.A.S;;;$ 13,165,082.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 13,165,082.00;$ 0.00
+LABORATORIO CLINICO ESPECIALIZADO SHIRLEY ANGULO URZOLA - NIT: 900264095-7;;;;;;;;;
+Sucursal: Principal - Direccion: CL  18  22   63 - Ciudad: Sincelejo - Telefono: 6052740166 - Email: 900264095@factureinbox.co;;;;;;;;;
+02/10/2026;FV JBGS 7836;01/11/2026;$ 173,800.00;$ 173,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+27/10/2026;FV JBGS 8051;26/11/2026;$ 323,800.00;$ 323,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 26.00
+Total Sucursal: Principal;;;$ 497,600.00;$ 497,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO ESPECIALIZADO SHIRLEY ANGULO URZOLA;;;$ 497,600.00;$ 497,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO GAMMALAB - NIT: 901246975-0;;;;;;;;;
+Sucursal: Principal - Direccion: CL 28 7 10 - Ciudad: Montería - Telefono: 3053790801 - Email: info.gammalab@gmail.com;;;;;;;;;
+19/03/2026;FV JBGS 6047;18/04/2026;$ 41,974,127.87;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 41,974,127.87;$ 196.00
+25/03/2026;FV JBGS 6088;23/06/2026;$ 24,756,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 24,756,250.00;$ 130.00
+25/09/2026;FV JBGS 7782;25/10/2026;$ 661,668.50;$ 0.00;$ 661,668.50;$ 0.00;$ 0.00;$ 0.00;$ 6.00
+Total Sucursal: Principal;;;$ 67,392,046.37;$ 0.00;$ 661,668.50;$ 0.00;$ 0.00;$ 66,730,377.87;$ 0.00
+Total Tercero: LABORATORIO CLINICO GAMMALAB;;;$ 67,392,046.37;$ 0.00;$ 661,668.50;$ 0.00;$ 0.00;$ 66,730,377.87;$ 0.00
+LABORATORIO CLINICO ISABEL CURIEL SAS - NIT: 900361707-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR 11 A 13 19 - Ciudad: Riohacha - Telefono: 3008058338 - Email: servicioalcliente@labisabelcuriel.com;;;;;;;;;
+18/09/2026;FV JBGS 7707;18/10/2026;$ 1,751,493.75;$ 0.00;$ 1,751,493.75;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+Total Sucursal: Principal;;;$ 1,751,493.75;$ 0.00;$ 1,751,493.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO ISABEL CURIEL SAS;;;$ 1,751,493.75;$ 0.00;$ 1,751,493.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO JUAN PABLO II E.U. IPS - NIT: 900041236-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR  16 CL  17 BARRIO LA CRUZ MZ 1 LT 1 - Ciudad: Turbaco - Telefono: 6637507 - Email: juanpablosegundoips@hotmail.com;;;;;;;;;
+22/10/2026;FV JBGS 8000;21/11/2026;$ 1,377,003.00;$ 1,377,003.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 21.00
+Total Sucursal: Principal;;;$ 1,377,003.00;$ 1,377,003.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO JUAN PABLO II E.U. IPS;;;$ 1,377,003.00;$ 1,377,003.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO LA CASTELLANA S.A.S - NIT: 900134212-5;;;;;;;;;
+Sucursal: Principal  - Direccion: BRR PIE DE LA POPA CL 29 C 19 18 - Ciudad: Cartagena De Indias - Telefono: 3126915293 - Email: 900134212@recepcion.alegra.com;;;;;;;;;
+28/10/2026;FV JBGS 8072;27/11/2026;$ 304,640.00;$ 304,640.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 27.00
+Total Sucursal: Principal ;;;$ 304,640.00;$ 304,640.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO LA CASTELLANA S.A.S;;;$ 304,640.00;$ 304,640.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO LETICIA   SERVICIOS DE SALUD SAS - NIT: 901316222-4;;;;;;;;;
+Sucursal: Principal - Direccion: CR 6 6 05 - Ciudad: Leticia - Telefono: 5925877 - Email: laboratorioclinicoleticia@gmail.com;;;;;;;;;
+21/09/2026;FV JBGS 7716;21/10/2026;$ 19,110,000.00;$ 0.00;$ 19,110,000.00;$ 0.00;$ 0.00;$ 0.00;$ 10.00
+07/10/2026;FV JBGS 7876;06/11/2026;$ 1,873,950.00;$ 1,873,950.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+Total Sucursal: Principal;;;$ 20,983,950.00;$ 1,873,950.00;$ 19,110,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO LETICIA   SERVICIOS DE SALUD SAS;;;$ 20,983,950.00;$ 1,873,950.00;$ 19,110,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO CLINICO PROCESAR IPS - NIT: 800234339-8;;;;;;;;;
+Sucursal: Principal - Direccion: CL 23 2 41 - Ciudad: Montería - Telefono: 7889656 - Email: laboratorioprocesarips@hotmail.com;;;;;;;;;
+03/09/2026;FV JBGS 7557;03/10/2026;$ 18,732,819.08;$ 0.00;$ 18,732,819.08;$ 0.00;$ 0.00;$ 0.00;$ 28.00
+08/09/2026;FV JBGS 7600;08/10/2026;$ 2,508,872.50;$ 0.00;$ 2,508,872.50;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+08/09/2026;FV JBGS 7604;08/10/2026;$ 692,348.00;$ 0.00;$ 692,348.00;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+11/09/2026;FV JBGS 7639;11/10/2026;$ 20,230.00;$ 0.00;$ 20,230.00;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+11/09/2026;FV JBGS 7638;11/10/2026;$ 718,380.00;$ 0.00;$ 718,380.00;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+18/09/2026;FV JBGS 7704;18/10/2026;$ 2,607,797.38;$ 0.00;$ 2,607,797.38;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+30/09/2026;FV JBGS 7809;30/10/2026;$ 204,918.00;$ 0.00;$ 204,918.00;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+30/09/2026;FV JBGS 7810;30/10/2026;$ 170,765.00;$ 0.00;$ 170,765.00;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+01/10/2026;FV JBGS 7831;31/10/2026;$ 18,725,368.85;$ 18,725,368.85;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+01/10/2026;FV JBGS 7828;31/10/2026;$ 4,814,359.38;$ 4,814,359.38;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+01/10/2026;FV JBGS 7827;31/10/2026;$ 1,768,155.00;$ 1,768,155.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+01/10/2026;FV JBGS 7826;31/10/2026;$ 918,903.88;$ 918,903.88;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+13/10/2026;FV JBGS 7907;12/11/2026;$ 4,365,409.05;$ 4,365,409.05;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+19/10/2026;FV JBGS 7964;18/11/2026;$ 702,292.50;$ 702,292.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+26/10/2026;FV JBGS 8036;25/11/2026;$ 1,647,506.25;$ 1,647,506.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+27/10/2026;FV JBGS 8054;26/11/2026;$ 1,755,005.85;$ 1,755,005.85;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 26.00
+Total Sucursal: Principal;;;$ 60,353,130.72;$ 34,697,000.76;$ 25,656,129.96;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABORATORIO CLINICO PROCESAR IPS;;;$ 60,353,130.72;$ 34,697,000.76;$ 25,656,129.96;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LABORATORIO DE ANALISIS BIOCLINICO S.A.S. - NIT: 890117577-0;;;;;;;;;
+Sucursal: Principal - Direccion: CR 43 69E 53 LC 102 - Ciudad: Barranquilla - Telefono: 0 - Email: carmenc.mar@hotmail.com;;;;;;;;;
+07/04/2026;FV JBGS 6178;07/05/2026;$ 521,771.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 521,771.25;$ 177.00
+28/04/2026;FV JBGS 6368;28/05/2026;$ 374,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 374,300.00;$ 156.00
+13/05/2026;FV JBGS 6505;12/06/2026;$ 567,850.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 567,850.00;$ 141.00
+10/06/2026;FV JBGS 6706;10/07/2026;$ 59,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 59,500.00;$ 113.00
+Total Sucursal: Principal;;;$ 1,523,421.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,523,421.25;$ 0.00
+Total Tercero: LABORATORIO DE ANALISIS BIOCLINICO S.A.S.;;;$ 1,523,421.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,523,421.25;$ 0.00
+LABORATORIO QUIMICO CLINICO S.A.S. - NIT: 802003411-7;;;;;;;;;
+Sucursal: Principal - Direccion: CR 53 64 28 CONS 112 - Ciudad: Barranquilla - Telefono: 3669701 - Email: facturaelectronica@laboquimico.com;;;;;;;;;
+01/04/2026;FV JBGS 6151;01/05/2026;$ 396,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 396,000.00;$ 183.00
+10/04/2026;FV JBGS 6227;10/05/2026;$ 3,591,048.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,591,048.75;$ 174.00
+11/04/2026;FV JBGS 6233;11/05/2026;$ 465,600.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 465,600.00;$ 173.00
+14/04/2026;FV JBGS 6258;14/05/2026;$ 26,775.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 26,775.00;$ 170.00
+17/04/2026;FV JBGS 6283;17/05/2026;$ 786,240.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 786,240.00;$ 167.00
+04/05/2026;FV JBGS 6418;03/06/2026;$ 514,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 514,800.00;$ 150.00
+04/05/2026;FV JBGS 6406;03/06/2026;$ 710,650.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 710,650.00;$ 150.00
+04/05/2026;FV JBGS 6409;03/06/2026;$ 420,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 420,000.00;$ 150.00
+21/05/2026;FV JBGS 6562;20/06/2026;$ 1,697,535.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,697,535.00;$ 133.00
+26/05/2026;FV JBGS 6610;25/06/2026;$ 1,498,524.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,498,524.00;$ 128.00
+28/05/2026;FV JBGS 6630;27/06/2026;$ 553,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 553,000.00;$ 126.00
+10/06/2026;FV JBGS 6751;10/07/2026;$ 88,060.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 88,060.00;$ 113.00
+10/06/2026;FV JBGS 6736;10/07/2026;$ 1,006,740.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,006,740.00;$ 113.00
+02/07/2026;FV JBGS 6930;01/08/2026;$ 1,629,108.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,629,108.50;$ 91.00
+09/07/2026;FV JBGS 7004;08/08/2026;$ 710,650.00;$ 0.00;$ 0.00;$ 0.00;$ 710,650.00;$ 0.00;$ 84.00
+06/08/2026;FV JBGS 7280;05/09/2026;$ 1,360,989.50;$ 0.00;$ 0.00;$ 1,360,989.50;$ 0.00;$ 0.00;$ 56.00
+15/09/2026;FV JBGS 7660;15/10/2026;$ 77,350.00;$ 0.00;$ 77,350.00;$ 0.00;$ 0.00;$ 0.00;$ 16.00
+19/09/2026;FV JBGS 7711;19/10/2026;$ 820,950.00;$ 0.00;$ 820,950.00;$ 0.00;$ 0.00;$ 0.00;$ 12.00
+23/09/2026;FV JBGS 7758;23/10/2026;$ 1,322,920.01;$ 0.00;$ 1,322,920.01;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+15/10/2026;FV JBGS 7936;14/11/2026;$ 573,695.00;$ 573,695.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 14.00
+Total Sucursal: Principal;;;$ 18,250,635.76;$ 573,695.00;$ 2,221,220.01;$ 1,360,989.50;$ 710,650.00;$ 13,384,081.25;$ 0.00
+Total Tercero: LABORATORIO QUIMICO CLINICO S.A.S.;;;$ 18,250,635.76;$ 573,695.00;$ 2,221,220.01;$ 1,360,989.50;$ 710,650.00;$ 13,384,081.25;$ 0.00
+LABORATORIO VIVIR SUCRE S.A.S - NIT: 901214203-6;;;;;;;;;
+Sucursal: Principal - Direccion: CR 17 15 52 ESQ CL CHACURRI - Ciudad: Sincelejo - Telefono: 3114349373 - Email: vivirlaboratorioclinico@gmail.com;;;;;;;;;
+21/07/2025;FV JBGS 4080;20/08/2025;$ 137,296.10;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 137,296.10;$ 437.00
+26/07/2025;FV JBGS 4124;25/08/2025;$ 321,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 321,300.00;$ 432.00
+Total Sucursal: Principal;;;$ 458,596.10;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 458,596.10;$ 0.00
+Total Tercero: LABORATORIO VIVIR SUCRE S.A.S;;;$ 458,596.10;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 458,596.10;$ 0.00
+LABORATORIOS DE ANALISIS A D B LTDA - NIT: 900087162-3;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 45   69 165 - Ciudad: Barranquilla - Telefono: 6052516748 - Email: zmendoza870415@gmail.com;;;;;;;;;
+05/08/2026;FV JBGS 7271;06/08/2026;$ 2,148,869.25;$ 0.00;$ 0.00;$ 0.00;$ 2,148,869.25;$ 0.00;$ 86.00
+11/08/2026;FV JBGS 7313;12/08/2026;$ 1,514,085.00;$ 0.00;$ 0.00;$ 0.00;$ 1,514,085.00;$ 0.00;$ 80.00
+12/08/2026;FV JBGS 7325;13/08/2026;$ 219,912.00;$ 0.00;$ 0.00;$ 0.00;$ 219,912.00;$ 0.00;$ 79.00
+14/09/2026;FV JBGS 7651;15/09/2026;$ 4,343,186.33;$ 0.00;$ 0.00;$ 4,343,186.33;$ 0.00;$ 0.00;$ 46.00
+17/09/2026;FV JBGS 7692;18/09/2026;$ 3,028,170.00;$ 0.00;$ 0.00;$ 3,028,170.00;$ 0.00;$ 0.00;$ 43.00
+22/10/2026;FV JBGS 8001;23/10/2026;$ 329,034.00;$ 0.00;$ 329,034.00;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+29/10/2026;FV JBGS 8084;30/10/2026;$ 1,371,522.50;$ 0.00;$ 1,371,522.50;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+Total Sucursal: Principal ;;;$ 12,954,779.08;$ 0.00;$ 1,700,556.50;$ 7,371,356.33;$ 3,882,866.25;$ 0.00;$ 0.00
+Total Tercero: LABORATORIOS DE ANALISIS A D B LTDA;;;$ 12,954,779.08;$ 0.00;$ 1,700,556.50;$ 7,371,356.33;$ 3,882,866.25;$ 0.00;$ 0.00
+LABVIDA IPS S.A.S - NIT: 901885726-4;;;;;;;;;
+Sucursal: Principal - Direccion: CR  17 BIS  43 71 BARRIO VILLA  VA - Ciudad: Montería - Telefono: 0 - Email: labvidaipssas@gmail.com;;;;;;;;;
+10/09/2026;FV JBGS 7625;10/10/2026;$ 4,437,900.00;$ 0.00;$ 4,437,900.00;$ 0.00;$ 0.00;$ 0.00;$ 21.00
+11/09/2026;FV JBGS 7636;11/10/2026;$ 4,304,625.00;$ 0.00;$ 4,304,625.00;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+14/09/2026;FV JBGS 7649;14/10/2026;$ 521,625.00;$ 0.00;$ 521,625.00;$ 0.00;$ 0.00;$ 0.00;$ 17.00
+28/09/2026;FV JBGS 7794;28/10/2026;$ 3,311,891.25;$ 0.00;$ 3,311,891.25;$ 0.00;$ 0.00;$ 0.00;$ 3.00
+07/10/2026;FV JBGS 7885;06/11/2026;$ 521,625.00;$ 521,625.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+Total Sucursal: Principal;;;$ 13,097,666.25;$ 521,625.00;$ 12,576,041.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LABVIDA IPS S.A.S;;;$ 13,097,666.25;$ 521,625.00;$ 12,576,041.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LIBIA DEL ROSARIO VERGARA MONTALVO - CC: 23048282;;;;;;;;;
+Sucursal: Principal - Direccion: CL 23 21 27 - Ciudad: Sampués - Telefono: 3114050994 - Email: libiavergaramontalvo@hotmail.com;;;;;;;;;
+24/08/2026;FV JBGS 7429;23/09/2026;$ 394,000.00;$ 0.00;$ 0.00;$ 394,000.00;$ 0.00;$ 0.00;$ 38.00
+31/10/2026;FV JBGS 8104;30/11/2026;$ 542,037.00;$ 542,037.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 30.00
+Total Sucursal: Principal;;;$ 936,037.00;$ 542,037.00;$ 0.00;$ 394,000.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LIBIA DEL ROSARIO VERGARA MONTALVO;;;$ 936,037.00;$ 542,037.00;$ 0.00;$ 394,000.00;$ 0.00;$ 0.00;$ 0.00
+LUIS NICOLAS DIAZGRANADOS BOLAÑO - CC: 12620959;;;;;;;;;
+Sucursal: Principal - Direccion: CL 16 15 05 - Ciudad: Ciénaga - Telefono: 0 - Email: lunidibo@hotmail.com;;;;;;;;;
+08/09/2026;FV JBGS 7607;08/10/2026;$ 253,400.00;$ 0.00;$ 253,400.00;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+07/10/2026;FV JBGS 7884;06/11/2026;$ 254,000.00;$ 254,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+20/10/2026;FV JBGS 7980;19/11/2026;$ 253,400.00;$ 253,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+Total Sucursal: Principal;;;$ 760,800.00;$ 507,400.00;$ 253,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: LUIS NICOLAS DIAZGRANADOS BOLAÑO;;;$ 760,800.00;$ 507,400.00;$ 253,400.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+LUZ HELENA MALAGON  TRAVECEDO - CC: 574422011;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 28 5 85 BRR LOS ANGELES - Ciudad: Santa Marta - Telefono: 3015013075 - Email: luzhcontabilidad@gmail.com;;;;;;;;;
+21/08/2026;FV JBGS 7423;22/08/2026;$ 454,670.00;$ 0.00;$ 0.00;$ 0.00;$ 454,670.00;$ 0.00;$ 70.00
+Total Sucursal: Principal ;;;$ 454,670.00;$ 0.00;$ 0.00;$ 0.00;$ 454,670.00;$ 0.00;$ 0.00
+Total Tercero: LUZ HELENA MALAGON  TRAVECEDO;;;$ 454,670.00;$ 0.00;$ 0.00;$ 0.00;$ 454,670.00;$ 0.00;$ 0.00
+MAINTENANCE AND QUALITY ADVANCED SOLUTIONS SAS - NIT: 901566924-8;;;;;;;;;
+Sucursal: Principal - Direccion: DG. 6  4 54 OF 101 BARRIO LA GRANJA - Ciudad: Montería - Telefono: 3005129910 - Email: mqadvancedsolution@gmail.com;;;;;;;;;
+20/10/2026;FV JBGS 7971;20/10/2026;$ 8,162,895.00;$ 0.00;$ 8,162,895.00;$ 0.00;$ 0.00;$ 0.00;$ 11.00
+21/10/2026;FV JBGS 7998;21/10/2026;$ 521,625.00;$ 0.00;$ 521,625.00;$ 0.00;$ 0.00;$ 0.00;$ 10.00
+22/10/2026;FV JBGS 8003;22/10/2026;$ 8,808,930.00;$ 0.00;$ 8,808,930.00;$ 0.00;$ 0.00;$ 0.00;$ 9.00
+26/10/2026;FV JBGS 8041;26/10/2026;$ 1,165,125.00;$ 0.00;$ 1,165,125.00;$ 0.00;$ 0.00;$ 0.00;$ 5.00
+28/10/2026;FV JBGS 8067;28/10/2026;$ 858,000.00;$ 0.00;$ 858,000.00;$ 0.00;$ 0.00;$ 0.00;$ 3.00
+30/10/2026;FV JBGS 8099;30/10/2026;$ 2,589,488.75;$ 0.00;$ 2,589,488.75;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+Total Sucursal: Principal;;;$ 22,106,063.75;$ 0.00;$ 22,106,063.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: MAINTENANCE AND QUALITY ADVANCED SOLUTIONS SAS;;;$ 22,106,063.75;$ 0.00;$ 22,106,063.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+MARIA EUGENIA MEJIA BELLO - CC: 32647564;;;;;;;;;
+Sucursal: Principal - Direccion: CL  75  45 45 - Ciudad: Barranquilla - Telefono: 6054033149 - Email: mariaemejia@gmail.com;;;;;;;;;
+22/07/2026;FV JBGS 7115;23/07/2026;$ 26,036.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 26,036.00;$ 100.00
+05/10/2026;FV JBGS 7864;06/10/2026;$ 509,600.00;$ 0.00;$ 509,600.00;$ 0.00;$ 0.00;$ 0.00;$ 25.00
+09/10/2026;FV JBGS 7897;10/10/2026;$ 100,000.00;$ 0.00;$ 100,000.00;$ 0.00;$ 0.00;$ 0.00;$ 21.00
+26/10/2026;FV JBGS 8037;27/10/2026;$ 180,000.00;$ 0.00;$ 180,000.00;$ 0.00;$ 0.00;$ 0.00;$ 4.00
+Total Sucursal: Principal;;;$ 815,636.00;$ 0.00;$ 789,600.00;$ 0.00;$ 0.00;$ 26,036.00;$ 0.00
+Total Tercero: MARIA EUGENIA MEJIA BELLO;;;$ 815,636.00;$ 0.00;$ 789,600.00;$ 0.00;$ 0.00;$ 26,036.00;$ 0.00
+MEDIC S.A.S - NIT: 900613066-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL 20A  7H 184 - Ciudad: Riohacha - Telefono: 7292515 - Email: medicsas844@gmail.com;;;;;;;;;
+26/10/2026;FV JBGS 8046;27/10/2026;$ 865,090.50;$ 0.00;$ 865,090.50;$ 0.00;$ 0.00;$ 0.00;$ 4.00
+28/10/2026;FV JBGS 8066;29/10/2026;$ 2,339,220.00;$ 0.00;$ 2,339,220.00;$ 0.00;$ 0.00;$ 0.00;$ 2.00
+Total Sucursal: Principal;;;$ 3,204,310.50;$ 0.00;$ 3,204,310.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: MEDIC S.A.S;;;$ 3,204,310.50;$ 0.00;$ 3,204,310.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+MEDICINA INTEGRAL S.A.S. - NIT: 800250634-3;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 44 14 282 BRR PORTAL DE ALMERIA - Ciudad: Montería - Telefono: 3154775032 - Email: info@medicinaintegralsa.com;;;;;;;;;
+24/09/2026;FV JBGS 7773;23/11/2026;$ 3,939,000.00;$ 3,939,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 23.00
+30/09/2026;FV JBGS 7818;29/11/2026;$ 2,115,750.00;$ 2,115,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 29.00
+30/10/2026;FV JBGS 8098;29/12/2026;$ 3,429,562.50;$ 3,429,562.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 59.00
+Total Sucursal: Principal ;;;$ 9,484,312.50;$ 9,484,312.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: MEDICINA INTEGRAL S.A.S.;;;$ 9,484,312.50;$ 9,484,312.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+MEDICINA LABORAL DE LA COSTA - NIT: 900651463-4;;;;;;;;;
+Sucursal: Principal - Direccion: CL 69 D 39 106 - Ciudad: Barranquilla - Telefono: 3689923 - Email: contabilidadmedilabsas@gmail.com;;;;;;;;;
+23/09/2026;FV JBGS 7751;23/10/2026;$ 1,207,875.00;$ 0.00;$ 1,207,875.00;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+Total Sucursal: Principal;;;$ 1,207,875.00;$ 0.00;$ 1,207,875.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: MEDICINA LABORAL DE LA COSTA;;;$ 1,207,875.00;$ 0.00;$ 1,207,875.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+MEDILAB LC S.A.S. - NIT: 900675502-7;;;;;;;;;
+Sucursal: Principal - Direccion: CR 6 26 61 - Ciudad: Santa Marta - Telefono: 4235671 - Email: lmedilab@hotmail.com;;;;;;;;;
+21/01/2026;FV JBGS 5513;20/02/2026;$ 1,316,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,316,250.00;$ 253.00
+10/03/2026;FV JBGS 5951;09/04/2026;$ 1,977,384.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,977,384.00;$ 205.00
+12/03/2026;FV JBGS 5975;11/04/2026;$ 972,657.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 972,657.50;$ 203.00
+07/04/2026;FV JBGS 6181;07/05/2026;$ 1,531,042.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,531,042.50;$ 177.00
+24/04/2026;FV JBGS 6348;24/05/2026;$ 496,525.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 496,525.00;$ 160.00
+07/05/2026;FV JBGS 6460;06/06/2026;$ 1,228,500.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 1,228,500.00;$ 147.00
+16/06/2026;FV JBGS 6781;16/07/2026;$ 717,450.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 717,450.00;$ 107.00
+23/06/2026;FV JBGS 6861;23/07/2026;$ 367,900.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 367,900.00;$ 100.00
+24/06/2026;FV JBGS 6871;24/07/2026;$ 622,727.60;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 622,727.60;$ 99.00
+07/07/2026;FV JBGS 6982;06/08/2026;$ 190,800.00;$ 0.00;$ 0.00;$ 0.00;$ 190,800.00;$ 0.00;$ 86.00
+15/07/2026;FV JBGS 7055;14/08/2026;$ 456,200.00;$ 0.00;$ 0.00;$ 0.00;$ 456,200.00;$ 0.00;$ 78.00
+06/08/2026;FV JBGS 7281;05/09/2026;$ 425,700.00;$ 0.00;$ 0.00;$ 425,700.00;$ 0.00;$ 0.00;$ 56.00
+14/08/2026;FV JBGS 7350;13/09/2026;$ 559,370.00;$ 0.00;$ 0.00;$ 559,370.00;$ 0.00;$ 0.00;$ 48.00
+20/08/2026;FV JBGS 7403;19/09/2026;$ 694,920.96;$ 0.00;$ 0.00;$ 694,920.96;$ 0.00;$ 0.00;$ 42.00
+25/08/2026;FV JBGS 7457;24/09/2026;$ 280,000.00;$ 0.00;$ 0.00;$ 280,000.00;$ 0.00;$ 0.00;$ 37.00
+19/10/2026;FV JBGS 7957;18/11/2026;$ 465,750.00;$ 465,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+29/10/2026;FV JBGS 8083;28/11/2026;$ 561,150.00;$ 561,150.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 28.00
+Total Sucursal: Principal;;;$ 12,864,327.56;$ 1,026,900.00;$ 0.00;$ 1,959,990.96;$ 647,000.00;$ 9,230,436.60;$ 0.00
+Total Tercero: MEDILAB LC S.A.S.;;;$ 12,864,327.56;$ 1,026,900.00;$ 0.00;$ 1,959,990.96;$ 647,000.00;$ 9,230,436.60;$ 0.00
+MYCAR IPS S.A.S. - NIT: 810002689-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR 4 6 33 BRR CENTRO - Ciudad: Anserma - Telefono: 8536452 - Email: gerenciamycar@gmail.com;;;;;;;;;
+21/05/2025;FV JBGS 3573;22/05/2025;$ 22,883,419.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 22,883,419.00;$ 527.00
+27/05/2025;FV JBGS 3618;28/05/2025;$ 519,702.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 519,702.50;$ 521.00
+Total Sucursal: Principal;;;$ 23,403,121.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 23,403,121.50;$ 0.00
+Total Tercero: MYCAR IPS S.A.S.;;;$ 23,403,121.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 23,403,121.50;$ 0.00
+NUBIA DEL CARMEN MILLAN GANDARA - CC: 42202268;;;;;;;;;
+Sucursal: Principal - Direccion: CR 25 30  60 - Ciudad: Corozal - Telefono: 2843209 - Email: isakevincaro@outlook.es;;;;;;;;;
+18/08/2026;FV JBGS 7366;18/08/2026;$ 186,990.00;$ 0.00;$ 0.00;$ 0.00;$ 186,990.00;$ 0.00;$ 74.00
+07/10/2026;FV JBGS 7878;07/10/2026;$ 540,820.00;$ 0.00;$ 540,820.00;$ 0.00;$ 0.00;$ 0.00;$ 24.00
+Total Sucursal: Principal;;;$ 727,810.00;$ 0.00;$ 540,820.00;$ 0.00;$ 186,990.00;$ 0.00;$ 0.00
+Total Tercero: NUBIA DEL CARMEN MILLAN GANDARA;;;$ 727,810.00;$ 0.00;$ 540,820.00;$ 0.00;$ 186,990.00;$ 0.00;$ 0.00
+ONIRIS DEL CARMEN BARRIOS REYES - CC: 22734442;;;;;;;;;
+Sucursal: Principal - Direccion: CR  14  38B 32 BARRIO LA UNION - Ciudad: Barranquilla - Telefono: 3006769842 - Email: onibarriosreyes@gmail.com;;;;;;;;;
+11/09/2026;FV JBGS 7642;11/10/2026;$ 542,668.21;$ 0.00;$ 542,668.21;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+Total Sucursal: Principal;;;$ 542,668.21;$ 0.00;$ 542,668.21;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ONIRIS DEL CARMEN BARRIOS REYES;;;$ 542,668.21;$ 0.00;$ 542,668.21;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+REPRESENTACIONES DIAGNOSTICAS LIMITADA - NIT: 800105014-7;;;;;;;;;
+Sucursal: Principal - Direccion: TV 44 99 115 TO A APTO 401 - Ciudad: Barranquilla - Telefono: 3736228 - Email: rdiagnosticas@yahoo.com;;;;;;;;;
+02/10/2026;FV JBGS 7841;01/11/2026;$ 358,915.00;$ 358,915.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 1.00
+05/10/2026;FV JBGS 7862;04/11/2026;$ 806,342.50;$ 806,342.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 4.00
+07/10/2026;FV JBGS 7879;06/11/2026;$ 648,862.50;$ 648,862.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6.00
+14/10/2026;FV JBGS 7922;13/11/2026;$ 70,000.00;$ 70,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+16/10/2026;FV JBGS 7948;15/11/2026;$ 138,977.00;$ 138,977.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 15.00
+19/10/2026;FV JBGS 7954;18/11/2026;$ 150,750.00;$ 150,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 18.00
+20/10/2026;FV JBGS 7982;19/11/2026;$ 159,750.00;$ 159,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 19.00
+Total Sucursal: Principal;;;$ 2,333,597.00;$ 2,333,597.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: REPRESENTACIONES DIAGNOSTICAS LIMITADA;;;$ 2,333,597.00;$ 2,333,597.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+ROCIO DEL CARMEN RAMOS LIZCANO - CC: 30769953;;;;;;;;;
+Sucursal: Principal  - Direccion: URB LA CRUZ CR 16 MZ E - Ciudad: Turbaco - Telefono: 3013605677 - Email: lab-rocioramos@hotmail.com;;;;;;;;;
+20/10/2026;FV JBGS 7975;21/10/2026;$ 92,820.00;$ 0.00;$ 92,820.00;$ 0.00;$ 0.00;$ 0.00;$ 10.00
+Total Sucursal: Principal ;;;$ 92,820.00;$ 0.00;$ 92,820.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ROCIO DEL CARMEN RAMOS LIZCANO;;;$ 92,820.00;$ 0.00;$ 92,820.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+ROCIO MODESTA DACONTE CAMARGO - CC: 57414070;;;;;;;;;
+Sucursal: Principal - Direccion: CARRERA 22  18-75 BARRIO BELLAVISTA  - Ciudad: Ciénaga - Telefono: 0 - Email: rodacafe2009@hotmail.com;;;;;;;;;
+24/03/2026;FV JBGS 6069;23/04/2026;$ 230,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 230,000.00;$ 191.00
+14/04/2026;FV JBGS 6255;14/05/2026;$ 502,656.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 502,656.00;$ 170.00
+27/04/2026;FV JBGS 6360;27/05/2026;$ 569,700.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 569,700.00;$ 157.00
+05/05/2026;FV JBGS 6436;04/06/2026;$ 185,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 185,800.00;$ 149.00
+05/05/2026;FV JBGS 6438;04/06/2026;$ 173,740.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 173,740.00;$ 149.00
+22/05/2026;FV JBGS 6567;21/06/2026;$ 873,750.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 873,750.00;$ 132.00
+25/05/2026;NCV NCCL 193;24/06/2026;-$ 6,437,158.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 6,437,158.00;$ 129.00
+25/05/2026;FV JBGS 6591;24/06/2026;$ 6,437,158.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 6,437,158.00;$ 129.00
+09/06/2026;FV JBGS 6695;09/07/2026;$ 514,100.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 514,100.00;$ 114.00
+04/07/2026;FV JBGS 6966;03/08/2026;$ 1,000,500.00;$ 0.00;$ 0.00;$ 0.00;$ 1,000,500.00;$ 0.00;$ 89.00
+04/08/2026;FV JBGS 7258;03/09/2026;$ 979,180.00;$ 0.00;$ 0.00;$ 979,180.00;$ 0.00;$ 0.00;$ 58.00
+25/08/2026;FV JBGS 7452;24/09/2026;$ 835,790.00;$ 0.00;$ 0.00;$ 835,790.00;$ 0.00;$ 0.00;$ 37.00
+27/08/2026;FV JBGS 7486;26/09/2026;$ 185,800.00;$ 0.00;$ 0.00;$ 185,800.00;$ 0.00;$ 0.00;$ 35.00
+14/10/2026;FV JBGS 7919;13/11/2026;$ 1,105,100.00;$ 1,105,100.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 13.00
+Total Sucursal: Principal;;;$ 7,156,116.00;$ 1,105,100.00;$ 0.00;$ 2,000,770.00;$ 1,000,500.00;$ 3,049,746.00;$ 0.00
+Total Tercero: ROCIO MODESTA DACONTE CAMARGO;;;$ 7,156,116.00;$ 1,105,100.00;$ 0.00;$ 2,000,770.00;$ 1,000,500.00;$ 3,049,746.00;$ 0.00
+RODOLFO VALENTIN GONZALEZ ESCORCIA - CC: 8496718;;;;;;;;;
+Sucursal: Principal - Direccion: CL 11 6 A 41 - Ciudad: Palmar De Varela - Telefono: 3134885833 - Email: rodolfogonzalezescorcia@gmail.com;;;;;;;;;
+28/02/2025;SI  1;05/04/2022;$ 378,625.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 378,625.00;$ 1,670.00
+28/02/2025;SI  1;11/03/2022;$ 134,250.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 134,250.00;$ 1,695.00
+28/02/2025;SI  1;11/03/2022;$ 2,275,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,275,000.00;$ 1,695.00
+28/02/2025;SI  1;11/03/2022;$ 380,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 380,000.00;$ 1,695.00
+28/02/2025;SI  1;04/03/2022;$ 4,700.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 4,700.00;$ 1,702.00
+Total Sucursal: Principal;;;$ 3,172,575.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,172,575.00;$ 0.00
+Total Tercero: RODOLFO VALENTIN GONZALEZ ESCORCIA;;;$ 3,172,575.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 3,172,575.00;$ 0.00
+ROSARIO DEL CARMEN ARNEDO POMBO - CC: 51626650;;;;;;;;;
+Sucursal: Principal - Direccion: CR 71   31   297 CS 504 - Ciudad: Cartagena De Indias - Telefono: 3165264526 - Email: rosarioarnedolab@yahoo.es;;;;;;;;;
+21/10/2026;FV JBGS 7996;20/11/2026;$ 1,029,917.00;$ 1,029,917.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+Total Sucursal: Principal;;;$ 1,029,917.00;$ 1,029,917.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: ROSARIO DEL CARMEN ARNEDO POMBO;;;$ 1,029,917.00;$ 1,029,917.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+SALUDCESAR IPS SAS - NIT: 900464263-6;;;;;;;;;
+Sucursal: Principal  - Direccion: CR 17 12 41 BRR ALFONSO LOPEZ - Ciudad: Valledupar - Telefono: 3126332793 - Email: saludcesarips@gmail.com;;;;;;;;;
+06/08/2026;FV JBGS 7288;07/08/2026;$ 13,592,810.38;$ 0.00;$ 0.00;$ 0.00;$ 13,592,810.38;$ 0.00;$ 85.00
+11/08/2026;FV JBGS 7316;12/08/2026;$ 217,000.00;$ 0.00;$ 0.00;$ 0.00;$ 217,000.00;$ 0.00;$ 80.00
+11/08/2026;FV JBGS 7314;12/08/2026;$ 32,500.00;$ 0.00;$ 0.00;$ 0.00;$ 32,500.00;$ 0.00;$ 80.00
+18/08/2026;FV JBGS 7365;19/08/2026;$ 1,803,382.00;$ 0.00;$ 0.00;$ 0.00;$ 1,803,382.00;$ 0.00;$ 73.00
+25/08/2026;FV JBGS 7451;26/08/2026;$ 253,400.00;$ 0.00;$ 0.00;$ 0.00;$ 253,400.00;$ 0.00;$ 66.00
+27/08/2026;FV JBGS 7489;28/08/2026;$ 1,089,271.00;$ 0.00;$ 0.00;$ 0.00;$ 1,089,271.00;$ 0.00;$ 64.00
+01/09/2026;FV JBGS 7525;02/09/2026;$ 276,750.00;$ 0.00;$ 0.00;$ 276,750.00;$ 0.00;$ 0.00;$ 59.00
+17/09/2026;FV JBGS 7690;18/09/2026;$ 495,803.00;$ 0.00;$ 0.00;$ 495,803.00;$ 0.00;$ 0.00;$ 43.00
+17/09/2026;FV JBGS 7687;18/09/2026;$ 9,240,899.50;$ 0.00;$ 0.00;$ 9,240,899.50;$ 0.00;$ 0.00;$ 43.00
+Total Sucursal: Principal ;;;$ 27,001,815.88;$ 0.00;$ 0.00;$ 10,013,452.50;$ 16,988,363.38;$ 0.00;$ 0.00
+Total Tercero: SALUDCESAR IPS SAS;;;$ 27,001,815.88;$ 0.00;$ 0.00;$ 10,013,452.50;$ 16,988,363.38;$ 0.00;$ 0.00
+SERVICIOS MEDICOS FLEMING IPS SAS - NIT: 900073916-9;;;;;;;;;
+Sucursal: Principal - Direccion: CL 25 18 35 - Ciudad: Soledad - Telefono: 3888137 - Email: contab.serviciosmedicosfleming@gmail.com;;;;;;;;;
+12/08/2026;FV JBGS 7328;11/09/2026;$ 1,914,848.50;$ 0.00;$ 0.00;$ 1,914,848.50;$ 0.00;$ 0.00;$ 50.00
+13/08/2026;FV JBGS 7337;12/09/2026;$ 486,000.00;$ 0.00;$ 0.00;$ 486,000.00;$ 0.00;$ 0.00;$ 49.00
+14/08/2026;FV JBGS 7342;13/09/2026;$ 350,000.00;$ 0.00;$ 0.00;$ 350,000.00;$ 0.00;$ 0.00;$ 48.00
+18/08/2026;FV JBGS 7376;17/09/2026;$ 1,090,440.00;$ 0.00;$ 0.00;$ 1,090,440.00;$ 0.00;$ 0.00;$ 44.00
+24/08/2026;FV JBGS 7436;23/09/2026;$ 646,230.00;$ 0.00;$ 0.00;$ 646,230.00;$ 0.00;$ 0.00;$ 38.00
+24/08/2026;FV JBGS 7437;23/09/2026;$ 45,101.00;$ 0.00;$ 0.00;$ 45,101.00;$ 0.00;$ 0.00;$ 38.00
+28/08/2026;FV JBGS 7492;27/09/2026;$ 4,440,150.00;$ 0.00;$ 0.00;$ 4,440,150.00;$ 0.00;$ 0.00;$ 34.00
+18/09/2026;FV JBGS 7696;18/10/2026;$ 1,352,733.52;$ 0.00;$ 1,352,733.52;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+22/09/2026;FV JBGS 7729;22/10/2026;$ 585,000.00;$ 0.00;$ 585,000.00;$ 0.00;$ 0.00;$ 0.00;$ 9.00
+22/09/2026;FV JBGS 7730;22/10/2026;$ 207,112.68;$ 0.00;$ 207,112.68;$ 0.00;$ 0.00;$ 0.00;$ 9.00
+28/09/2026;FV JBGS 7789;28/10/2026;$ 2,198,975.00;$ 0.00;$ 2,198,975.00;$ 0.00;$ 0.00;$ 0.00;$ 3.00
+Total Sucursal: Principal;;;$ 13,316,590.70;$ 0.00;$ 4,343,821.20;$ 8,972,769.50;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: SERVICIOS MEDICOS FLEMING IPS SAS;;;$ 13,316,590.70;$ 0.00;$ 4,343,821.20;$ 8,972,769.50;$ 0.00;$ 0.00;$ 0.00
+SERVICIOS MEDICOS INTEGRALES EVM S.A.S I.P.S. - NIT: 802015727-0;;;;;;;;;
+Sucursal: Principal - Direccion: CL 18 16 37 - Ciudad: Soledad - Telefono: 3714219 - Email: ipsbernardohoussay@gmail.com;;;;;;;;;
+09/07/2026;FV JBGS 7002;08/08/2026;-$ 240,000.00;$ 0.00;$ 0.00;$ 0.00;-$ 240,000.00;$ 0.00;$ 84.00
+18/07/2026;FV JBGS 7102;17/08/2026;$ 1,105,650.00;$ 0.00;$ 0.00;$ 0.00;$ 1,105,650.00;$ 0.00;$ 75.00
+23/07/2026;FV JBGS 7127;22/08/2026;$ 1,569,154.00;$ 0.00;$ 0.00;$ 0.00;$ 1,569,154.00;$ 0.00;$ 70.00
+30/07/2026;FV JBGS 7194;29/08/2026;$ 2,582,743.00;$ 0.00;$ 0.00;$ 0.00;$ 2,582,743.00;$ 0.00;$ 63.00
+11/08/2026;FV JBGS 7317;10/09/2026;$ 346,400.00;$ 0.00;$ 0.00;$ 346,400.00;$ 0.00;$ 0.00;$ 51.00
+12/08/2026;FV JBGS 7327;11/09/2026;$ 3,912,872.00;$ 0.00;$ 0.00;$ 3,912,872.00;$ 0.00;$ 0.00;$ 50.00
+14/08/2026;FV JBGS 7343;13/09/2026;$ 125,902.00;$ 0.00;$ 0.00;$ 125,902.00;$ 0.00;$ 0.00;$ 48.00
+14/08/2026;FV JBGS 7354;13/09/2026;$ 543,075.00;$ 0.00;$ 0.00;$ 543,075.00;$ 0.00;$ 0.00;$ 48.00
+21/08/2026;FV JBGS 7409;20/09/2026;$ 3,104,805.00;$ 0.00;$ 0.00;$ 3,104,805.00;$ 0.00;$ 0.00;$ 41.00
+24/08/2026;FV JBGS 7433;23/09/2026;$ 1,834,875.00;$ 0.00;$ 0.00;$ 1,834,875.00;$ 0.00;$ 0.00;$ 38.00
+27/08/2026;FV JBGS 7480;26/09/2026;$ 304,000.00;$ 0.00;$ 0.00;$ 304,000.00;$ 0.00;$ 0.00;$ 35.00
+07/09/2026;FV JBGS 7592;07/10/2026;$ 2,859,376.00;$ 0.00;$ 2,859,376.00;$ 0.00;$ 0.00;$ 0.00;$ 24.00
+09/09/2026;FV JBGS 7618;09/10/2026;$ 956,855.50;$ 0.00;$ 956,855.50;$ 0.00;$ 0.00;$ 0.00;$ 22.00
+10/09/2026;FV JBGS 7619;10/10/2026;$ 120,000.00;$ 0.00;$ 120,000.00;$ 0.00;$ 0.00;$ 0.00;$ 21.00
+15/09/2026;FV JBGS 7668;15/10/2026;$ 210,000.00;$ 0.00;$ 210,000.00;$ 0.00;$ 0.00;$ 0.00;$ 16.00
+18/09/2026;FV JBGS 7708;18/10/2026;$ 2,833,465.00;$ 0.00;$ 2,833,465.00;$ 0.00;$ 0.00;$ 0.00;$ 13.00
+23/09/2026;FV JBGS 7753;23/10/2026;$ 1,099,339.00;$ 0.00;$ 1,099,339.00;$ 0.00;$ 0.00;$ 0.00;$ 8.00
+25/09/2026;FV JBGS 7779;25/10/2026;$ 405,790.00;$ 0.00;$ 405,790.00;$ 0.00;$ 0.00;$ 0.00;$ 6.00
+30/09/2026;FV JBGS 7816;30/10/2026;$ 2,393,820.50;$ 0.00;$ 2,393,820.50;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+16/10/2026;FV JBGS 7947;15/11/2026;$ 2,201,221.00;$ 2,201,221.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 15.00
+23/10/2026;FV JBGS 8028;22/11/2026;$ 1,576,789.00;$ 1,576,789.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+26/10/2026;FV JBGS 8048;25/11/2026;$ 595,000.00;$ 595,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+Total Sucursal: Principal;;;$ 30,441,132.00;$ 4,373,010.00;$ 10,878,646.00;$ 10,171,929.00;$ 5,017,547.00;$ 0.00;$ 0.00
+Total Tercero: SERVICIOS MEDICOS INTEGRALES EVM S.A.S I.P.S.;;;$ 30,441,132.00;$ 4,373,010.00;$ 10,878,646.00;$ 10,171,929.00;$ 5,017,547.00;$ 0.00;$ 0.00
+SERVIPRONTO INTEGRAL S.A.S. - NIT: 901377861-1;;;;;;;;;
+Sucursal: Principal - Direccion: CR 41  45 276 P 1 - Ciudad: Arjona - Telefono: 3002528633 - Email: gutove29@gmail.com;;;;;;;;;
+30/06/2026;FV JBGS 6907;30/07/2026;$ 2,504,638.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,504,638.50;$ 93.00
+03/07/2026;FV JBGS 6953;02/08/2026;$ 438,400.00;$ 0.00;$ 0.00;$ 0.00;$ 438,400.00;$ 0.00;$ 90.00
+16/07/2026;FV JBGS 7074;15/08/2026;$ 1,161,200.50;$ 0.00;$ 0.00;$ 0.00;$ 1,161,200.50;$ 0.00;$ 77.00
+22/07/2026;FV JBGS 7114;21/08/2026;$ 487,500.00;$ 0.00;$ 0.00;$ 0.00;$ 487,500.00;$ 0.00;$ 71.00
+31/07/2026;FV JBGS 7220;30/08/2026;$ 1,252,319.25;$ 0.00;$ 0.00;$ 0.00;$ 1,252,319.25;$ 0.00;$ 62.00
+02/09/2026;FV JBGS 7544;02/10/2026;$ 5,325,353.10;$ 0.00;$ 5,325,353.10;$ 0.00;$ 0.00;$ 0.00;$ 29.00
+09/09/2026;FV JBGS 7613;09/10/2026;$ 196,000.00;$ 0.00;$ 196,000.00;$ 0.00;$ 0.00;$ 0.00;$ 22.00
+01/10/2026;FV JBGS 7825;31/10/2026;$ 14,232,159.75;$ 14,232,159.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+05/10/2026;FV JBGS 7854;04/11/2026;$ 891,832.50;$ 891,832.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 4.00
+13/10/2026;FV JBGS 7909;12/11/2026;$ 154,700.00;$ 154,700.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 12.00
+21/10/2026;FV JBGS 7992;20/11/2026;$ 229,164.25;$ 229,164.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 20.00
+27/10/2026;FV JBGS 8057;26/11/2026;$ 226,100.00;$ 226,100.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 26.00
+Total Sucursal: Principal;;;$ 27,099,367.85;$ 15,733,956.50;$ 5,521,353.10;$ 0.00;$ 3,339,419.75;$ 2,504,638.50;$ 0.00
+Total Tercero: SERVIPRONTO INTEGRAL S.A.S.;;;$ 27,099,367.85;$ 15,733,956.50;$ 5,521,353.10;$ 0.00;$ 3,339,419.75;$ 2,504,638.50;$ 0.00
+SILVIA  HELENA  SUAREZ  ANGULO - CC: 33211429;;;;;;;;;
+Sucursal: Principal - Direccion:  CARRERA 1 N° 13 - 49 - Ciudad: Mompós - Telefono: 3114149860 - Email: silviasurez55@yahoo.es;;;;;;;;;
+24/09/2026;FV JBGS 7766;24/10/2026;$ 279,623.00;$ 0.00;$ 279,623.00;$ 0.00;$ 0.00;$ 0.00;$ 7.00
+15/10/2026;FV JBGS 7937;14/11/2026;$ 327,920.60;$ 327,920.60;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 14.00
+Total Sucursal: Principal;;;$ 607,543.60;$ 327,920.60;$ 279,623.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: SILVIA  HELENA  SUAREZ  ANGULO;;;$ 607,543.60;$ 327,920.60;$ 279,623.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+SIOMLAB IPS - NIT: 900703047-8;;;;;;;;;
+Sucursal: Principal - Direccion: C R 49 74 157 - Ciudad: Barranquilla - Telefono: 3013205553 - Email: contabilidad.siomlabips@gmail.com;;;;;;;;;
+28/05/2026;FV JBGS 6632;28/05/2026;$ 194,730.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 194,730.00;$ 156.00
+28/05/2026;FV JBGS 6627;28/05/2026;$ 170,790.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 170,790.00;$ 156.00
+10/06/2026;FV JBGS 6715;10/06/2026;$ 159,460.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 159,460.00;$ 143.00
+12/06/2026;FV JBGS 6778;12/06/2026;$ 460,075.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 460,075.00;$ 141.00
+03/08/2026;FV JBGS 7228;03/08/2026;$ 292,740.00;$ 0.00;$ 0.00;$ 0.00;$ 292,740.00;$ 0.00;$ 89.00
+31/08/2026;FV JBGS 7510;31/08/2026;$ 292,740.00;$ 0.00;$ 0.00;$ 0.00;$ 292,740.00;$ 0.00;$ 61.00
+Total Sucursal: Principal;;;$ 1,570,535.00;$ 0.00;$ 0.00;$ 0.00;$ 585,480.00;$ 985,055.00;$ 0.00
+Total Tercero: SIOMLAB IPS;;;$ 1,570,535.00;$ 0.00;$ 0.00;$ 0.00;$ 585,480.00;$ 985,055.00;$ 0.00
+SOLUCIONES EN SALUD IPS SAS - NIT: 900518561-1;;;;;;;;;
+Sucursal: Principal - Direccion: CL  39 N° 14B   97 URBANIZACION  BRIZALIA - Ciudad: Montería - Telefono: 3104984916 - Email: contactanos@solucionesensalud.com.co;;;;;;;;;
+28/02/2025;SI  1;31/10/2024;$ 6,543,944.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 6,543,944.00;$ 730.00
+Total Sucursal: Principal;;;$ 6,543,944.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 6,543,944.00;$ 0.00
+Total Tercero: SOLUCIONES EN SALUD IPS SAS;;;$ 6,543,944.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 6,543,944.00;$ 0.00
+SUMICOL V&L S.A.S. - NIT: 900992494-5;;;;;;;;;
+Sucursal: Principal - Direccion: CR 6  . 31 68 BRR CENTRO - Ciudad: Montería - Telefono: 3234787596 - Email: summicolvylsas@gmail.com;;;;;;;;;
+25/06/2026;FV JBGS 6882;25/07/2026;$ 2,121,865.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,121,865.00;$ 98.00
+22/07/2026;FV JBGS 7118;21/08/2026;$ 1,919,801.25;$ 0.00;$ 0.00;$ 0.00;$ 1,919,801.25;$ 0.00;$ 71.00
+24/07/2026;FV JBGS 7148;23/08/2026;$ 1,938,690.00;$ 0.00;$ 0.00;$ 0.00;$ 1,938,690.00;$ 0.00;$ 69.00
+18/08/2026;FV JBGS 7369;17/09/2026;$ 1,965,624.00;$ 0.00;$ 0.00;$ 1,965,624.00;$ 0.00;$ 0.00;$ 44.00
+01/09/2026;FV JBGS 7528;01/10/2026;$ 1,852,710.50;$ 0.00;$ 1,852,710.50;$ 0.00;$ 0.00;$ 0.00;$ 30.00
+10/09/2026;FV JBGS 7621;10/10/2026;$ 2,010,626.25;$ 0.00;$ 2,010,626.25;$ 0.00;$ 0.00;$ 0.00;$ 21.00
+29/09/2026;FV JBGS 7801;29/10/2026;$ 1,680,530.63;$ 0.00;$ 1,680,530.63;$ 0.00;$ 0.00;$ 0.00;$ 2.00
+08/10/2026;FV JBGS 7890;07/11/2026;$ 331,653.00;$ 331,653.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 7.00
+28/10/2026;FV JBGS 8069;27/11/2026;$ 1,875,112.25;$ 1,875,112.25;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 27.00
+Total Sucursal: Principal;;;$ 15,696,612.88;$ 2,206,765.25;$ 5,543,867.38;$ 1,965,624.00;$ 3,858,491.25;$ 2,121,865.00;$ 0.00
+Total Tercero: SUMICOL V&L S.A.S.;;;$ 15,696,612.88;$ 2,206,765.25;$ 5,543,867.38;$ 1,965,624.00;$ 3,858,491.25;$ 2,121,865.00;$ 0.00
+TERESA DEL CARMEN LOPEZ NARVAEZ - CC: 22406786;;;;;;;;;
+Sucursal: Principal - Direccion: CL 42 41 67 AP 3A - Ciudad: Barranquilla - Telefono: 3721473 - Email: teresapazybien@hotmail.com;;;;;;;;;
+30/10/2026;FV JBGS 8092;30/10/2026;$ 324,000.00;$ 0.00;$ 324,000.00;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+Total Sucursal: Principal;;;$ 324,000.00;$ 0.00;$ 324,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: TERESA DEL CARMEN LOPEZ NARVAEZ;;;$ 324,000.00;$ 0.00;$ 324,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+UNIDAD DE CUIDADOS INTENSIVOS RENACER S.A.S. - NIT: 825003080-6;;;;;;;;;
+Sucursal: Principal - Direccion: CL 14 A 11 09 - Ciudad: Riohacha - Telefono: 7282809 - Email: 825003080@factureinbox.co;;;;;;;;;
+12/08/2026;FV JBGS 7326;11/09/2026;$ 1,179,249.50;$ 0.00;$ 0.00;$ 1,179,249.50;$ 0.00;$ 0.00;$ 50.00
+01/09/2026;FV JBGS 7532;01/10/2026;$ 1,031,940.00;$ 0.00;$ 1,031,940.00;$ 0.00;$ 0.00;$ 0.00;$ 30.00
+Total Sucursal: Principal;;;$ 2,211,189.50;$ 0.00;$ 1,031,940.00;$ 1,179,249.50;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: UNIDAD DE CUIDADOS INTENSIVOS RENACER S.A.S.;;;$ 2,211,189.50;$ 0.00;$ 1,031,940.00;$ 1,179,249.50;$ 0.00;$ 0.00;$ 0.00
+UNIDAD DE LABORATORIO UNILAB LIMITADA - NIT: 802003178-5;;;;;;;;;
+Sucursal: Principal  - Direccion: CL 59 N 50 17 - Ciudad: Barranquilla - Telefono: 6053601431 - Email: unilab@hotmail.es;;;;;;;;;
+25/09/2026;FV JBGS 7781;25/10/2026;$ 108,800.00;$ 0.00;$ 108,800.00;$ 0.00;$ 0.00;$ 0.00;$ 6.00
+23/10/2026;FV JBGS 8022;22/11/2026;$ 100,696.00;$ 100,696.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+Total Sucursal: Principal ;;;$ 209,496.00;$ 100,696.00;$ 108,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: UNIDAD DE LABORATORIO UNILAB LIMITADA;;;$ 209,496.00;$ 100,696.00;$ 108,800.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+UNION MEDICA DEL RIO IPS S.A.S - NIT: 901374080-2;;;;;;;;;
+Sucursal: Principal - Direccion: CR 7 8 30 BRR ARROYITO - Ciudad: Pinillos - Telefono: 3233446868 - Email: umer.ips.sas@gmail.com;;;;;;;;;
+30/10/2026;FV JBGS 8094;29/11/2026;$ 930,374.50;$ 930,374.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 29.00
+Total Sucursal: Principal;;;$ 930,374.50;$ 930,374.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: UNION MEDICA DEL RIO IPS S.A.S;;;$ 930,374.50;$ 930,374.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+UNIVERSIDAD DE SAN BUENAVENTURA - NIT: 890307400-1;;;;;;;;;
+Sucursal: Principal  - Direccion: AK 9 123 76 OF 602 603 - Ciudad: Bogotá, D.C. - Telefono: 3011684783 - Email: contabilidad.rg@usb.edu.co;;;;;;;;;
+15/09/2026;FV JBGS 7666;15/10/2026;$ 907,020.00;$ 0.00;$ 907,020.00;$ 0.00;$ 0.00;$ 0.00;$ 16.00
+Total Sucursal: Principal ;;;$ 907,020.00;$ 0.00;$ 907,020.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: UNIVERSIDAD DE SAN BUENAVENTURA;;;$ 907,020.00;$ 0.00;$ 907,020.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+UNIVERSIDAD SIMON BOLIVAR - NIT: 890104633-9;;;;;;;;;
+Sucursal: Principal - Direccion: CR 59 59 65 - Ciudad: Barranquilla - Telefono: 3444333 - Email: 890104633@factureinbox.co;;;;;;;;;
+01/10/2026;FV JBGS 7821;31/10/2026;$ 34,312,063.50;$ 34,312,063.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Sucursal: Principal;;;$ 34,312,063.50;$ 34,312,063.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: UNIVERSIDAD SIMON BOLIVAR;;;$ 34,312,063.50;$ 34,312,063.50;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+VITALIA SAS - NIT: 900933735-3;;;;;;;;;
+Sucursal: Principal - Direccion: CR 12  11A   37 LOCAL 1 - Ciudad: Riohacha - Telefono: 3216654240 - Email: vitalia.rcha@gmail.com;;;;;;;;;
+11/07/2026;FV JBGS 7033;10/08/2026;$ 6,130,708.83;$ 0.00;$ 0.00;$ 0.00;$ 6,130,708.83;$ 0.00;$ 82.00
+28/07/2026;FV JBGS 7174;27/08/2026;$ 8,271,117.13;$ 0.00;$ 0.00;$ 0.00;$ 8,271,117.13;$ 0.00;$ 65.00
+05/08/2026;FV JBGS 7276;04/09/2026;$ 11,015,453.56;$ 0.00;$ 0.00;$ 11,015,453.56;$ 0.00;$ 0.00;$ 57.00
+11/08/2026;FV JBGS 7304;10/09/2026;$ 2,303,437.50;$ 0.00;$ 0.00;$ 2,303,437.50;$ 0.00;$ 0.00;$ 51.00
+01/09/2026;FV JBGS 7531;01/10/2026;$ 15,851,112.25;$ 0.00;$ 15,851,112.25;$ 0.00;$ 0.00;$ 0.00;$ 30.00
+03/09/2026;FV JBGS 7566;03/10/2026;$ 3,122,401.43;$ 0.00;$ 3,122,401.43;$ 0.00;$ 0.00;$ 0.00;$ 28.00
+03/09/2026;FV JBGS 7556;03/10/2026;$ 8,474,980.75;$ 0.00;$ 8,474,980.75;$ 0.00;$ 0.00;$ 0.00;$ 28.00
+07/09/2026;FV JBGS 7586;07/10/2026;$ 73,780.00;$ 0.00;$ 73,780.00;$ 0.00;$ 0.00;$ 0.00;$ 24.00
+08/09/2026;FV JBGS 7605;08/10/2026;$ 11,347,411.00;$ 0.00;$ 11,347,411.00;$ 0.00;$ 0.00;$ 0.00;$ 23.00
+12/09/2026;FV JBGS 7644;12/10/2026;$ 98,543.90;$ 0.00;$ 98,543.90;$ 0.00;$ 0.00;$ 0.00;$ 19.00
+16/09/2026;FV JBGS 7683;16/10/2026;$ 726,570.00;$ 0.00;$ 726,570.00;$ 0.00;$ 0.00;$ 0.00;$ 15.00
+25/09/2026;FV JBGS 7784;25/10/2026;$ 1,268,677.25;$ 0.00;$ 1,268,677.25;$ 0.00;$ 0.00;$ 0.00;$ 6.00
+30/09/2026;FV JBGS 7812;30/10/2026;$ 5,876,013.44;$ 0.00;$ 5,876,013.44;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+30/09/2026;FV JBGS 7814;30/10/2026;$ 5,074,156.50;$ 0.00;$ 5,074,156.50;$ 0.00;$ 0.00;$ 0.00;$ 1.00
+15/10/2026;FV JBGS 7940;14/11/2026;$ 10,438,712.75;$ 10,438,712.75;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 14.00
+23/10/2026;FV JBGS 8026;22/11/2026;$ 257,200.00;$ 257,200.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 22.00
+30/10/2026;FV JBGS 8093;29/11/2026;$ 8,580,509.88;$ 8,580,509.88;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 29.00
+Total Sucursal: Principal;;;$ 98,910,786.17;$ 19,276,422.63;$ 51,913,646.52;$ 13,318,891.06;$ 14,401,825.96;$ 0.00;$ 0.00
+Total Tercero: VITALIA SAS;;;$ 98,910,786.17;$ 19,276,422.63;$ 51,913,646.52;$ 13,318,891.06;$ 14,401,825.96;$ 0.00;$ 0.00
+WENDYS MARCELA PETRO ALVAREZ - CC: 51919258;;;;;;;;;
+Sucursal: Principal - Direccion: CL 10  . 7A 39 ESD - Ciudad: Planeta Rica - Telefono: 7769240 - Email: wepelab17@hotmail.com;;;;;;;;;
+26/10/2026;FV JBGS 8043;25/11/2026;$ 120,625.00;$ 120,625.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+26/10/2026;FV JBGS 8040;25/11/2026;$ 1,538,722.00;$ 1,538,722.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;-$ 25.00
+Total Sucursal: Principal;;;$ 1,659,347.00;$ 1,659,347.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: WENDYS MARCELA PETRO ALVAREZ;;;$ 1,659,347.00;$ 1,659,347.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+YADID DEL CARMEN RODELO  DE FEX - CC: 33197070;;;;;;;;;
+Sucursal: Principal  - Direccion: CALLE 16  13 135 - Ciudad: Magangué - Telefono: 3007374633 - Email: dsinningc4@gmail.com;;;;;;;;;
+28/01/2026;FV JBGS 5587;29/01/2026;$ 2,522,000.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,522,000.00;$ 275.00
+10/07/2026;FV JBGS 7020;11/07/2026;$ 400,570.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 400,570.00;$ 112.00
+Total Sucursal: Principal ;;;$ 2,922,570.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,922,570.00;$ 0.00
+Total Tercero: YADID DEL CARMEN RODELO  DE FEX;;;$ 2,922,570.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00;$ 2,922,570.00;$ 0.00
+YAMIL BAJAIRE VILLA Y CIA. S.A.S. - NIT: 800185859-5;;;;;;;;;
+Sucursal: Principal - Direccion: ED RINCON DE LA COVADONGA 34 38 Y 34 40 BRR CENTRO CL DEL COLEGIO - Ciudad: Cartagena De Indias - Telefono: 6642004 - Email: lab.yamilbajairevilla@gmail.com;;;;;;;;;
+11/09/2026;FV JBGS 7631;11/10/2026;$ 273,300.00;$ 0.00;$ 273,300.00;$ 0.00;$ 0.00;$ 0.00;$ 20.00
+Total Sucursal: Principal;;;$ 273,300.00;$ 0.00;$ 273,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total Tercero: YAMIL BAJAIRE VILLA Y CIA. S.A.S.;;;$ 273,300.00;$ 0.00;$ 273,300.00;$ 0.00;$ 0.00;$ 0.00;$ 0.00
+Total General;;;$ 1,688,792,613.03;$ 373,730,762.26;$ 258,857,749.82;$ 180,918,451.10;$ 127,611,647.82;$ 747,674,002.03;$ 0.00
+</script>
+
+<script>
+/* ===================== CONFIGURACIÓN ===================== */
+const BUCKETS = [
+  {n:'Por vencer', c:'var(--b0)', hex:'#2e9e5b'},
+  {n:'1-30',       c:'var(--b1)', hex:'#9bbf3b'},
+  {n:'31-60',      c:'var(--b2)', hex:'#e3b21f'},
+  {n:'61-90',      c:'var(--b3)', hex:'#e5772d'},
+  {n:'Más de 90',  c:'var(--b4)', hex:'#c8312c'}
+];
+// Tolerancias por defecto: dir 'max' = el valor no debe superar el umbral; 'min' = no debe bajar del umbral
+const TOL_DEFAULT = {
+  pctVencida:{lbl:'Cartera vencida máx. (% del total)', v:30, dir:'max', unit:'%'},
+  pct90:     {lbl:'Más de 90 días máx. (% del total)',  v:15, dir:'max', unit:'%'},
+  pctPV:     {lbl:'Por vencer mín. (% del total)',      v:50, dir:'min', unit:'%'},
+  mora:      {lbl:'Mora promedio ponderada máx. (días)',v:60, dir:'max', unit:'días'},
+  conc:      {lbl:'Concentración del mayor cliente máx. (%)', v:15, dir:'max', unit:'%'},
+  pctSI:     {lbl:'Saldos iniciales (SI) máx. (% del total)', v:2, dir:'max', unit:'%'}
+};
+const WARN_BAND = 0.20; // hasta 20% más allá del umbral = alerta (ámbar); más = fuera de tolerancia (rojo)
+
+/* ===================== UTILIDADES ===================== */
+const $ = id => document.getElementById(id);
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const nf0 = new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
+const nf1 = new Intl.NumberFormat('es-CO',{minimumFractionDigits:1,maximumFractionDigits:1});
+const fmtM  = v => '$' + nf1.format(v/1e6) + ' M';
+const fmtMs = v => Math.abs(v) >= 1e6 ? '$' + nf1.format(v/1e6) + ' M' : '$' + nf0.format(v/1e3) + ' mil';
+const fmt$  = v => (v<0?'-$':'$') + nf0.format(Math.abs(v));
+const fmtPct= v => nf1.format(v) + '%';
+const fmtD  = d => d ? d.toLocaleDateString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+const esc   = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const trunc = (s,n) => s.length > n ? s.slice(0,n-1) + '…' : s;
+const sum   = (a,f) => a.reduce((s,x)=>s+f(x),0);
+
+/* ===================== PARSER DEL REPORTE ===================== */
+function parseMoney(s){
+  if(!s) return 0; s = s.trim(); if(!s) return 0;
+  const neg = s.startsWith('-');
+  const v = parseFloat(s.replace(/[^0-9.]/g,'')) || 0;
+  return neg ? -v : v;
+}
+function parseDate(s){
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((s||'').trim());
+  return m ? new Date(+m[3], +m[2]-1, +m[1]) : null;
+}
+function parseReport(text){
+  text = text.replace(/^﻿/,'');
+  const lines = text.split(/\r?\n/);
+  let corte=null, empresa='', cli=null, ciudad='Sin ciudad', totalGeneral=null;
+  const rows = [];
+  for(const raw of lines){
+    const f = raw.split(';');
+    const a = (f[0]||'').trim(), b = (f[1]||'').trim();
+    if(!a){
+      if(b){
+        const m = /cierre al (\d{1,2}\/\d{1,2}\/\d{4})/i.exec(b);
+        if(m) corte = parseDate(m[1]);
+        else if(!empresa && !/NIT|Estado de Cuenta|Cartera|Valores/i.test(b)) empresa = b;
+      }
+      continue;
+    }
+    if(/^Fecha$/i.test(a)) continue;
+    if(/^Total General/i.test(a)){ totalGeneral = parseMoney(f[3]); continue; }
+    if(/^Total /i.test(a)) continue;                               // Total Sucursal / Total Tercero
+    if(/^Sucursal:/i.test(a)){
+      const m = /Ciudad:\s*(.*?)\s*-\s*Telefono/i.exec(a);
+      ciudad = m && m[1].trim() ? m[1].trim() : 'Sin ciudad';
+      continue;
+    }
+    const d = parseDate(a);
+    if(d && f.length >= 10 && cli){
+      const vals = [4,5,6,7,8].map(i => parseMoney(f[i]));
+      let bi = 0, mx = 0;
+      vals.forEach((v,i) => { if(Math.abs(v) > mx){ mx = Math.abs(v); bi = i; } });
+      const doc = b.replace(/\s+/g,' ');
+      const tipo = /^SI\b/i.test(doc) ? 'SI' : /^NC/i.test(doc) ? 'NC' : 'FV';
+      rows.push({cliente:cli.name, id:cli.id, ciudad, fecha:d, doc, vence:parseDate(f[2]),
+                 valor:parseMoney(f[3]), bucket:bi, dias:Math.round(parseMoney(f[9])), tipo});
+      continue;
+    }
+    const m = /^(.*?)\s+-\s+(NIT|CC):\s*(.*)$/i.exec(a);              // fila del cliente
+    if(m){ cli = {name:m[1].replace(/\s+/g,' ').trim(), id:m[2].toUpperCase()+' '+m[3].trim()}; ciudad='Sin ciudad'; }
+  }
+  return {rows, corte, empresa, totalGeneral};
+}
+
+/* ===================== ESTADO ===================== */
+let DATA = {rows:[], corte:null, empresa:'', totalGeneral:null};
+const F = {cliente:'', ciudad:'', rango:'', tipo:'', exSI:false};
+let TOL = loadTol();
+let sortK = 'dias', sortDir = -1;
+
+function loadTol(){
+  const saved = store.get('cartera_tol', {});
+  const t = JSON.parse(JSON.stringify(TOL_DEFAULT));
+  for(const k in t) if(saved[k] != null && !isNaN(saved[k])) t[k].v = +saved[k];
+  return t;
+}
+function filtered(ignore){
+  return DATA.rows.filter(r =>
+    (!F.exSI || r.tipo !== 'SI') &&
+    (ignore==='cliente' || !F.cliente || r.cliente === F.cliente) &&
+    (ignore==='ciudad'  || !F.ciudad  || r.ciudad  === F.ciudad) &&
+    (ignore==='rango'   || F.rango === '' || r.bucket === +F.rango) &&
+    (!F.tipo || r.tipo === F.tipo));
+}
+
+/* ===================== TOOLTIP ===================== */
+const tip = $('tip');
+function showTip(e, html){ tip.innerHTML = html; tip.style.display='block'; moveTip(e); }
+function moveTip(e){
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if(x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if(y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x+'px'; tip.style.top = y+'px';
+}
+function hideTip(){ tip.style.display='none'; }
+function bindTips(root){
+  root.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mouseenter', e => showTip(e, el.getAttribute('data-tip')));
+    el.addEventListener('mousemove', moveTip);
+    el.addEventListener('mouseleave', hideTip);
+  });
+}
+function partsTip(title, parts, total){
+  let h = `<b>${esc(title)}</b><br>Total: ${fmt$(total)}`;
+  parts.forEach((v,i) => { if(v) h += `<br><span style="color:${BUCKETS[i].hex}">■</span> ${BUCKETS[i].n}: ${fmt$(v)} (${fmtPct(total? v/total*100:0)})`; });
+  return h;
+}
+
+/* ===================== KPIs ===================== */
+function status(key, val){
+  const t = TOL[key]; if(!t) return 'neutral';
+  const over = t.dir === 'max' ? val - t.v : t.v - val;
+  if(over <= 0) return 'ok';
+  return over <= Math.abs(t.v) * WARN_BAND ? 'warn' : 'bad';
+}
+const ST_TXT = {ok:'✓ Dentro de tolerancia', warn:'▲ Alerta: cerca del límite', bad:'✕ Fuera de tolerancia'};
+function kpiCard(o){
+  const st = o.key ? status(o.key, o.metric) : 'neutral';
+  const t = o.key ? TOL[o.key] : null;
+  const stTxt = t ? `${ST_TXT[st]} (${t.dir==='max'?'máx.':'mín.'} ${nf1.format(t.v)}${t.unit==='%'?'%':' '+t.unit})` : (o.note||'');
+  return `<div class="kpi ${st}"><div class="lbl">${o.lbl}</div><div class="val">${o.val}</div><div class="det">${o.det||''}</div><div class="st">${stTxt}</div></div>`;
+}
+function renderKPIs(rows){
+  const total = sum(rows, r=>r.valor);
+  const by = [0,0,0,0,0]; rows.forEach(r => by[r.bucket] += r.valor);
+  const venc = by[1]+by[2]+by[3]+by[4];
+  const pct = v => total ? v/total*100 : 0;
+  const cliTot = {}; rows.forEach(r => cliTot[r.cliente] = (cliTot[r.cliente]||0) + r.valor);
+  const nCli = Object.values(cliTot).filter(v => v > 0.5).length;
+  const top = Object.entries(cliTot).sort((a,b)=>b[1]-a[1])[0] || ['—',0];
+  const vRows = rows.filter(r => r.bucket > 0 && r.dias > 0);
+  const nFactV = vRows.filter(r => r.tipo !== 'NC' && r.valor > 0).length;
+  const wSum = sum(vRows, r => Math.max(r.valor,0));
+  const mora = wSum ? sum(vRows, r => Math.max(r.valor,0)*r.dias) / wSum : 0;
+  const vNoSI = vRows.filter(r => r.tipo !== 'SI'); const wNo = sum(vNoSI, r=>Math.max(r.valor,0));
+  const moraNoSI = wNo ? sum(vNoSI, r=>Math.max(r.valor,0)*r.dias)/wNo : 0;
+  const si = sum(rows.filter(r=>r.tipo==='SI'), r=>r.valor);
+  const nSI = rows.filter(r=>r.tipo==='SI').length;
+  const nc = sum(rows.filter(r=>r.tipo==='NC'), r=>r.valor);
+
+  $('kpis').innerHTML = [
+    kpiCard({lbl:'Cartera total', val:fmtM(total), det:`${nf0.format(rows.length)} documentos · NC aplicadas ${fmtMs(nc)}`, note:'Saldo neto a la fecha de corte'}),
+    kpiCard({lbl:'Cartera vencida', val:fmtM(venc), det:`${fmtPct(pct(venc))} del total`, key:'pctVencida', metric:pct(venc)}),
+    kpiCard({lbl:'Más de 90 días', val:fmtM(by[4]), det:`${fmtPct(pct(by[4]))} del total`, key:'pct90', metric:pct(by[4])}),
+    kpiCard({lbl:'Cartera por vencer', val:fmtM(by[0]), det:`${fmtPct(pct(by[0]))} del total`, key:'pctPV', metric:pct(by[0])}),
+    kpiCard({lbl:'Clientes con saldo · facturas vencidas', val:`${nCli} · ${nFactV}`, det:'Clientes con saldo neto positivo · documentos en mora', note:'Volumen de gestión de cobro'}),
+    kpiCard({lbl:'Mora promedio ponderada', val:`${nf0.format(mora)} días`, det:`Sin saldos iniciales: ${nf0.format(moraNoSI)} días`, key:'mora', metric:mora}),
+    kpiCard({lbl:'Concentración mayor cliente', val:fmtPct(pct(top[1])), det:esc(trunc(top[0],42)), key:'conc', metric:pct(top[1])}),
+    kpiCard({lbl:'Saldos iniciales (SI)', val:fmtM(si), det:`${nSI} documentos de 2021-2024 · ${fmtPct(pct(si))} · posible difícil cobro`, key:'pctSI', metric:pct(si)})
+  ].join('');
+}
+
+/* ===================== GRÁFICOS (SVG puro) ===================== */
+const W = el => Math.max(el.clientWidth, 280);
+function niceMax(v){ if(v<=0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v/p; return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p; }
+function emptyMsg(el, msg){ el.innerHTML = `<div class="empty">${msg}</div>`; }
+
+// 1) Barras verticales por edad + barra 100% apilada
+function renderAging(rows){
+  const el = $('cAging'), w = W(el), h = 270, m = {t:28,r:8,b:46,l:56};
+  const by = [0,0,0,0,0]; const cnt=[0,0,0,0,0];
+  rows.forEach(r => { by[r.bucket] += r.valor; cnt[r.bucket]++; });
+  const total = sum(by, v=>v);
+  if(!rows.length){ emptyMsg(el,'Sin datos para los filtros seleccionados.'); $('cStack100').innerHTML=''; return; }
+  const max = niceMax(Math.max(...by, 1)), iw = w-m.l-m.r, ih = h-m.t-m.b;
+  const bw = iw/5, gap = Math.min(28, bw*0.28);
+  const y = v => m.t + ih - Math.max(v,0)/max*ih;
+  let s = `<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  for(let i=0;i<=4;i++){ const v = max*i/4, yy = y(v);
+    s += `<line class="gridl" x1="${m.l}" x2="${w-m.r}" y1="${yy}" y2="${yy}"/><text x="${m.l-8}" y="${yy+4}" text-anchor="end">${nf0.format(v/1e6)} M</text>`; }
+  by.forEach((v,i) => {
+    const x = m.l + i*bw + gap/2, bh = Math.max(Math.max(v,0)/max*ih, v>0?2:0), yy = m.t+ih-bh, ww = bw-gap;
+    const dim = F.rango !== '' && +F.rango !== i ? ' dim' : '';
+    const r = Math.min(4, ww/2, bh);
+    s += `<path class="clk${dim}" data-r="${i}" fill="${BUCKETS[i].c}" d="M${x},${m.t+ih} V${yy+r} Q${x},${yy} ${x+r},${yy} H${x+ww-r} Q${x+ww},${yy} ${x+ww},${yy+r} V${m.t+ih} Z"
+      data-tip="<b>${BUCKETS[i].n}</b><br>${fmt$(v)}<br>${fmtPct(total?v/total*100:0)} del total · ${cnt[i]} documentos"/>`;
+    s += `<text x="${x+ww/2}" y="${yy-14}" text-anchor="middle" style="font-weight:700;fill:var(--ink);font-size:12.5px">${fmtM(v)}</text>`;
+    s += `<text x="${x+ww/2}" y="${yy-2}" text-anchor="middle" style="font-size:11px">${fmtPct(total?v/total*100:0)}</text>`;
+    s += `<text x="${x+ww/2}" y="${m.t+ih+18}" text-anchor="middle" style="font-weight:600;fill:var(--ink)">${BUCKETS[i].n}</text>`;
+    s += `<text x="${x+ww/2}" y="${m.t+ih+33}" text-anchor="middle" style="font-size:10.5px">${i===0?'aún no vence':'días de mora'}</text>`;
+  });
+  s += `<line class="axis" x1="${m.l}" x2="${w-m.r}" y1="${m.t+ih}" y2="${m.t+ih}"/></svg>`;
+  el.innerHTML = s;
+  el.querySelectorAll('[data-r]').forEach(p => p.addEventListener('click', () => { F.rango = F.rango === p.dataset.r ? '' : p.dataset.r; syncControls(); render(); }));
+  bindTips(el);
+
+  // barra 100% apilada
+  const el2 = $('cStack100'), w2 = W(el2), h2 = 58; let x = 0;
+  const pos = by.map(v=>Math.max(v,0)), pt = sum(pos,v=>v) || 1;
+  let s2 = `<svg viewBox="0 0 ${w2} ${h2}" height="${h2}"><text x="0" y="11" style="font-weight:600">Proporción de cada rango (100%)</text>`;
+  pos.forEach((v,i) => {
+    const ww = v/pt*w2; if(ww <= 0) return;
+    s2 += `<rect class="clk" data-r="${i}" x="${x}" y="18" width="${Math.max(ww-2,1)}" height="26" rx="4" fill="${BUCKETS[i].c}" data-tip="<b>${BUCKETS[i].n}</b><br>${fmtPct(v/pt*100)} · ${fmt$(v)}"/>`;
+    if(ww > 46) s2 += `<text x="${x+ww/2-1}" y="35" text-anchor="middle" style="fill:${i===1||i===2?'#1d2433':'#fff'};font-weight:700;pointer-events:none">${nf0.format(v/pt*100)}%</text>`;
+    x += ww;
+  });
+  el2.innerHTML = s2 + '</svg>';
+  el2.querySelectorAll('[data-r]').forEach(p => p.addEventListener('click', () => { F.rango = F.rango === p.dataset.r ? '' : p.dataset.r; syncControls(); render(); }));
+  bindTips(el2);
+}
+
+// Barras horizontales apiladas por rango (Top 10 y Ciudades)
+function legendHTML(){ return BUCKETS.map(b => `<span><i style="background:${b.c}"></i>${b.n}</span>`).join(''); }
+function groupParts(rows, key){
+  const g = {};
+  rows.forEach(r => { const k = r[key]; if(!g[k]) g[k] = {label:k, parts:[0,0,0,0,0], total:0, n:0}; g[k].parts[r.bucket] += r.valor; g[k].total += r.valor; g[k].n++; });
+  return Object.values(g).sort((a,b) => b.total - a.total);
+}
+function hStacked(el, items, opts){
+  if(!items.length){ emptyMsg(el,'Sin datos para los filtros seleccionados.'); return; }
+  const w = W(el), lw = Math.min(opts.labelW, w*0.42), rw = 74, bh = opts.barH || 20, gap = opts.gap || 8;
+  const h = items.length*(bh+gap) + 6, iw = w - lw - rw;
+  const max = Math.max(...items.map(d => sum(d.parts, v=>Math.max(v,0))), 1);
+  let s = `<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  items.forEach((d,j) => {
+    const y = j*(bh+gap) + 2; let x = lw;
+    const dim = opts.active && opts.active !== d.label ? ' dim' : '';
+    s += `<g class="clk${dim}" data-k="${esc(d.label)}" data-tip="${esc(partsTip(d.label, d.parts, d.total))}<br>${d.n} documentos">`;
+    s += `<rect x="0" y="${y-3}" width="${w}" height="${bh+6}" fill="transparent"/>`;
+    s += `<text x="${lw-8}" y="${y+bh/2+4}" text-anchor="end" style="fill:var(--ink)">${esc(trunc(d.label, opts.trunc))}</text>`;
+    const segs = d.parts.map((v,i)=>({v:Math.max(v,0),i})).filter(o=>o.v>0);
+    segs.forEach((o,k) => {
+      const ww = o.v/max*iw; const last = k === segs.length-1;
+      const wDraw = Math.max(ww - (last?0:2), 1);
+      if(last){ const r = Math.min(4, wDraw/2);
+        s += `<path fill="${BUCKETS[o.i].c}" d="M${x},${y} H${x+wDraw-r} Q${x+wDraw},${y} ${x+wDraw},${y+r} V${y+bh-r} Q${x+wDraw},${y+bh} ${x+wDraw-r},${y+bh} H${x} Z"/>`;
+      } else s += `<rect x="${x}" y="${y}" width="${wDraw}" height="${bh}" fill="${BUCKETS[o.i].c}"/>`;
+      x += ww;
+    });
+    s += `<text x="${x+6}" y="${y+bh/2+4}" style="font-weight:600;fill:var(--ink)">${fmtMs(d.total)}</text></g>`;
+  });
+  el.innerHTML = s + '</svg>';
+  el.querySelectorAll('[data-k]').forEach(g => g.addEventListener('click', () => opts.onClick(g.dataset.k)));
+  bindTips(el);
+}
+
+function renderTop(rows){
+  const all = groupParts(rows, 'cliente'), items = all.slice(0,10);
+  const total = sum(rows, r=>r.valor);
+  hStacked($('cTop'), items, {labelW:230, trunc:34, active:F.cliente, onClick:k => { F.cliente = F.cliente===k ? '' : k; syncControls(); render(); }});
+  if(!items.length){ $('inTop').innerHTML=''; return; }
+  const t10 = sum(items, d=>d.total);
+  const full90 = items.filter(d => d.total > 0 && d.parts[4]/d.total >= 0.99).map(d => trunc(d.label,30));
+  let h = `El mayor deudor, <b>${esc(items[0].label)}</b>, concentra <b>${fmtPct(total?items[0].total/total*100:0)}</b> de la cartera (${fmtM(items[0].total)}). Los 10 primeros suman <b>${fmtPct(total?t10/total*100:0)}</b>.`;
+  if(full90.length) h += ` Con el saldo completo en más de 90 días: <b>${full90.map(esc).join(', ')}</b>.`;
+  $('inTop').innerHTML = h;
+}
+
+function renderCity(rows){
+  hStacked($('cCity'), groupParts(rows, 'ciudad'), {labelW:150, trunc:22, barH:16, gap:7, active:F.ciudad, onClick:k => { F.ciudad = F.ciudad===k ? '' : k; syncControls(); render(); }});
+}
+
+// Vencimientos próximos por semana
+function renderFlow(rows){
+  const el = $('cFlow');
+  const pv = rows.filter(r => r.bucket === 0 && r.vence);
+  if(!pv.length){ emptyMsg(el,'No hay cartera por vencer con los filtros actuales.'); $('inFlow').innerHTML=''; return; }
+  const monday = d => { const x = new Date(d); const k = (x.getDay()+6)%7; x.setDate(x.getDate()-k); x.setHours(0,0,0,0); return x; };
+  const wk = {};
+  pv.forEach(r => { const k = monday(r.vence).getTime(); wk[k] = (wk[k]||0) + r.valor; });
+  const keys = Object.keys(wk).map(Number).sort((a,b)=>a-b);
+  const weeks = []; for(let t = keys[0]; t <= keys[keys.length-1]; t += 7*864e5){ const d = new Date(t); d.setHours(0,0,0,0); weeks.push({d, v: wk[d.getTime()] || wk[t] || 0}); }
+  const w = W(el), h = 260, m = {t:22,r:8,b:52,l:56}, iw = w-m.l-m.r, ih = h-m.t-m.b;
+  const max = niceMax(Math.max(...weeks.map(x=>x.v), 1)), bw = iw/weeks.length, gap = Math.max(2, Math.min(10, bw*0.22));
+  const mon = d => d.toLocaleDateString('es-CO',{month:'short'}).replace('.','');
+  let s = `<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  for(let i=0;i<=4;i++){ const v=max*i/4, yy=m.t+ih-v/max*ih; s += `<line class="gridl" x1="${m.l}" x2="${w-m.r}" y1="${yy}" y2="${yy}"/><text x="${m.l-8}" y="${yy+4}" text-anchor="end">${nf0.format(v/1e6)} M</text>`; }
+  const tones = ['#2e9e5b','#5bb37f','#1f7a45','#8ccaa4'];
+  let lastMonth = -1, mi = -1;
+  weeks.forEach((o,i) => {
+    const end = new Date(o.d); end.setDate(end.getDate()+6);
+    if(o.d.getMonth() !== lastMonth){ lastMonth = o.d.getMonth(); mi++; }
+    const x = m.l + i*bw + gap/2, ww = Math.max(bw-gap,1), bh = Math.max(o.v,0)/max*ih, yy = m.t+ih-bh, r = Math.min(4, ww/2, bh);
+    if(bh > 0) s += `<path fill="${tones[mi%2===0?0:2]}" d="M${x},${m.t+ih} V${yy+r} Q${x},${yy} ${x+r},${yy} H${x+ww-r} Q${x+ww},${yy} ${x+ww},${yy+r} V${m.t+ih} Z"/>`;
+    s += `<rect x="${m.l+i*bw}" y="${m.t}" width="${bw}" height="${ih}" fill="transparent" data-tip="<b>Semana ${o.d.getDate()} ${mon(o.d)} – ${end.getDate()} ${mon(end)}</b><br>Vence: ${fmt$(o.v)}"/>`;
+    if(bw > 34 && o.v > 0) s += `<text x="${x+ww/2}" y="${yy-5}" text-anchor="middle" style="font-size:10.5px;font-weight:600;fill:var(--ink)">${nf1.format(o.v/1e6)}</text>`;
+    const every = Math.ceil(42/bw);
+    if(i % every === 0) s += `<text x="${x+ww/2}" y="${m.t+ih+16}" text-anchor="middle" style="font-size:10.5px">${o.d.getDate()} ${mon(o.d)}</text>`;
+  });
+  // totales por mes debajo
+  const byM = {}; pv.forEach(r => { const k = r.vence.getFullYear()*12 + r.vence.getMonth(); byM[k] = (byM[k]||0) + r.valor; });
+  s += `<text x="${m.l}" y="${h-8}" style="font-size:11px">Semanas que inician el lunes indicado · cifras en millones</text>`;
+  s += `<line class="axis" x1="${m.l}" x2="${w-m.r}" y1="${m.t+ih}" y2="${m.t+ih}"/></svg>`;
+  el.innerHTML = s; bindTips(el);
+  const mNames = Object.keys(byM).sort((a,b)=>a-b).map(k => { const d = new Date(Math.floor(k/12), k%12, 1);
+    return `<b>${d.toLocaleDateString('es-CO',{month:'long',year:'numeric'})}</b>: ${fmtM(byM[k])}`; });
+  const peak = weeks.reduce((a,b)=> b.v>a.v?b:a);
+  $('inFlow').innerHTML = `Entradas esperadas por mes — ${mNames.join(' · ')}. Semana de mayor vencimiento: <b>${peak.d.getDate()} ${mon(peak.d)}</b> (${fmtM(peak.v)}).`;
+}
+
+// Pareto (eje único en %)
+function renderPareto(rows){
+  const el = $('cPareto');
+  const all = groupParts(rows, 'cliente').filter(d => d.total > 0);
+  const total = sum(all, d=>d.total);
+  if(!all.length || total <= 0){ emptyMsg(el,'Sin datos.'); $('inPareto').innerHTML=''; return; }
+  let acc = 0; all.forEach(d => { acc += d.total; d.cum = acc/total*100; d.pct = d.total/total*100; });
+  const n80 = all.findIndex(d => d.cum >= 80) + 1;
+  const show = all.slice(0, Math.min(all.length, Math.max(20, Math.min(n80+3, 30))));
+  const w = W(el), h = 280, m = {t:14,r:10,b:40,l:40}, iw = w-m.l-m.r, ih = h-m.t-m.b;
+  const bw = iw/show.length, gap = Math.max(2, Math.min(6, bw*0.25));
+  const y = v => m.t + ih - v/100*ih;
+  let s = `<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  [0,20,40,60,80,100].forEach(v => s += `<line class="gridl" x1="${m.l}" x2="${w-m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l-6}" y="${y(v)+4}" text-anchor="end">${v}%</text>`);
+  s += `<line x1="${m.l}" x2="${w-m.r}" y1="${y(80)}" y2="${y(80)}" stroke="var(--b4)" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+  let path = '';
+  show.forEach((d,i) => {
+    const x = m.l + i*bw + gap/2, ww = Math.max(bw-gap,1), yy = y(d.pct), bh = m.t+ih-yy, r = Math.min(3, ww/2, bh);
+    s += `<path fill="${i < n80 ? 'var(--accent)' : '#9fb4e3'}" d="M${x},${m.t+ih} V${yy+r} Q${x},${yy} ${x+r},${yy} H${x+ww-r} Q${x+ww},${yy} ${x+ww},${yy+r} V${m.t+ih} Z"/>`;
+    path += (i?'L':'M') + (x+ww/2) + ',' + y(d.cum);
+  });
+  s += `<path d="${path}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
+  show.forEach((d,i) => { const cx = m.l+i*bw+bw/2; s += `<circle cx="${cx}" cy="${y(d.cum)}" r="${bw>14?3.5:2}" fill="var(--ink)" stroke="#fff" stroke-width="1.5"/>`;
+    s += `<rect class="clk" data-k="${esc(d.label)}" x="${m.l+i*bw}" y="${m.t}" width="${bw}" height="${ih}" fill="transparent" data-tip="<b>#${i+1} ${esc(d.label)}</b><br>Saldo: ${fmt$(d.total)}<br>Participación: ${fmtPct(d.pct)}<br>Acumulado: ${fmtPct(d.cum)}"/>`;
+    if(i % Math.ceil(26/bw) === 0) s += `<text x="${cx}" y="${m.t+ih+15}" text-anchor="middle" style="font-size:10.5px">${i+1}</text>`; });
+  s += `<text x="${m.l+iw/2}" y="${h-6}" text-anchor="middle" style="font-size:11px">Clientes ordenados por saldo (posición en el ranking)</text>`;
+  s += `<line class="axis" x1="${m.l}" x2="${w-m.r}" y1="${m.t+ih}" y2="${m.t+ih}"/></svg>`;
+  el.innerHTML = s; bindTips(el);
+  el.querySelectorAll('[data-k]').forEach(g => g.addEventListener('click', () => { F.cliente = F.cliente===g.dataset.k?'':g.dataset.k; syncControls(); render(); }));
+  $('inPareto').innerHTML = `<b>${n80} de ${all.length}</b> clientes (${fmtPct(n80/all.length*100)}) explican el <b>80%</b> de la cartera. Enfocar el cobro en ellos (barras oscuras) cubre la mayor parte del saldo.`;
+}
+
+// Evolución mensual (histórico en el navegador)
+function cutTotals(){
+  const rows = DATA.rows, by=[0,0,0,0,0]; rows.forEach(r => by[r.bucket] += r.valor);
+  const c = DATA.corte || new Date();
+  const key = `${c.getFullYear()}-${String(c.getMonth()+1).padStart(2,'0')}-${String(c.getDate()).padStart(2,'0')}`;
+  return {fecha:key, total:sum(by,v=>v), vencida:by[1]+by[2]+by[3]+by[4], m90:by[4], porVencer:by[0]};
+}
+function renderEvo(){
+  const el = $('cEvo'); const hist = store.get('cartera_hist', []).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(hist.length < 2){
+    emptyMsg(el, hist.length ? `Hay 1 corte guardado (${hist[0].fecha}). Guarda el corte de cada mes; con dos o más aparecerá la tendencia.` :
+      'Aún no hay cortes guardados. Pulsa «Guardar este corte» cada mes para construir la evolución.');
+    return;
+  }
+  const w = W(el), h = 250, m = {t:16,r:16,b:34,l:56}, iw = w-m.l-m.r, ih = h-m.t-m.b;
+  const max = niceMax(Math.max(...hist.map(x=>x.total)));
+  const x = i => m.l + (hist.length===1 ? iw/2 : i/(hist.length-1)*iw), y = v => m.t+ih - v/max*ih;
+  let s = `<svg viewBox="0 0 ${w} ${h}" height="${h}">`;
+  for(let i=0;i<=4;i++){ const v=max*i/4; s += `<line class="gridl" x1="${m.l}" x2="${w-m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${nf0.format(v/1e6)} M</text>`; }
+  [['total','var(--accent)'],['vencida','var(--b3)'],['m90','var(--b4)']].forEach(([k,c]) => {
+    s += `<path fill="none" stroke="${c}" stroke-width="2" d="${hist.map((p,i)=>(i?'L':'M')+x(i)+','+y(p[k])).join('')}"/>`;
+    hist.forEach((p,i) => s += `<circle cx="${x(i)}" cy="${y(p[k])}" r="4" fill="${c}" stroke="#fff" stroke-width="2"/>`);
+  });
+  hist.forEach((p,i) => {
+    s += `<text x="${x(i)}" y="${h-12}" text-anchor="middle">${p.fecha.slice(0,7)}</text>`;
+    s += `<rect x="${x(i)-Math.max(iw/hist.length/2,12)}" y="${m.t}" width="${Math.max(iw/hist.length,24)}" height="${ih}" fill="transparent" data-tip="<b>Corte ${p.fecha}</b><br>Total: ${fmtM(p.total)}<br>Vencida: ${fmtM(p.vencida)} (${fmtPct(p.vencida/p.total*100)})<br>Más de 90: ${fmtM(p.m90)} (${fmtPct(p.m90/p.total*100)})"/>`;
+  });
+  el.innerHTML = s + `<line class="axis" x1="${m.l}" x2="${w-m.r}" y1="${m.t+ih}" y2="${m.t+ih}"/></svg>`;
+  bindTips(el);
+}
+
+/* ===================== TABLA ===================== */
+function renderTable(rows){
+  const q = $('q').value.trim().toLowerCase();
+  let list = q ? rows.filter(r => (r.cliente+' '+r.doc+' '+r.ciudad).toLowerCase().includes(q)) : rows.slice();
+  list.sort((a,b) => { let va=a[sortK], vb=b[sortK]; if(va instanceof Date){va=va?va.getTime():0; vb=vb?vb.getTime():0;}
+    return (va>vb?1:va<vb?-1:0)*sortDir; });
+  document.querySelectorAll('th').forEach(th => { th.textContent = th.textContent.replace(/ [▲▼]$/,''); if(th.dataset.k===sortK) th.textContent += sortDir>0?' ▲':' ▼'; });
+  const tagTxt = {FV:'FV', NC:'NCV', SI:'SI'};
+  $('tb').innerHTML = list.map(r => `<tr>
+    <td class="cli">${esc(r.cliente)}</td><td>${esc(r.ciudad)}</td><td>${esc(r.doc)}</td>
+    <td><span class="tag ${r.tipo}">${tagTxt[r.tipo]}</span></td><td>${fmtD(r.fecha)}</td><td>${fmtD(r.vence)}</td>
+    <td class="num">${fmt$(r.valor)}</td><td class="num"><span class="dias d${r.bucket}">${r.dias}</span></td><td>${BUCKETS[r.bucket].n}</td></tr>`).join('');
+  $('tfL').textContent = `Total (${nf0.format(list.length)} documentos)`;
+  $('tfV').textContent = fmt$(sum(list, r=>r.valor));
+  $('tblInfo').textContent = `${nf0.format(list.length)} de ${nf0.format(DATA.rows.length)} documentos`;
+}
+
+/* ===================== CONTROLES ===================== */
+function fillSelect(sel, values, all){
+  sel.innerHTML = `<option value="">${all}</option>` + values.map(v => `<option value="${esc(v.v)}">${esc(v.t)}</option>`).join('');
+}
+function buildControls(){
+  const cli = [...new Set(DATA.rows.map(r=>r.cliente))].sort((a,b)=>a.localeCompare(b,'es'));
+  const ciu = [...new Set(DATA.rows.map(r=>r.ciudad))].sort((a,b)=>a.localeCompare(b,'es'));
+  fillSelect($('fCliente'), cli.map(v=>({v,t:v})), 'Todos los clientes');
+  fillSelect($('fCiudad'), ciu.map(v=>({v,t:v})), 'Todas las ciudades');
+  fillSelect($('fRango'), BUCKETS.map((b,i)=>({v:String(i),t:b.n})), 'Todos los rangos');
+}
+function syncControls(){
+  $('fCliente').value = F.cliente; $('fCiudad').value = F.ciudad; $('fRango').value = F.rango; $('fTipo').value = F.tipo; $('fExSI').checked = F.exSI;
+  const chips = [];
+  if(F.cliente) chips.push(['cliente', 'Cliente: '+trunc(F.cliente,28)]);
+  if(F.ciudad)  chips.push(['ciudad', 'Ciudad: '+F.ciudad]);
+  if(F.rango!=='') chips.push(['rango', 'Rango: '+BUCKETS[+F.rango].n]);
+  if(F.tipo)    chips.push(['tipo', 'Tipo: '+F.tipo]);
+  if(F.exSI)    chips.push(['exSI', 'Sin saldos iniciales']);
+  $('chips').innerHTML = chips.map(([k,t]) => `<span class="chip" data-k="${k}" title="Quitar filtro">${esc(t)} ✕</span>`).join('') +
+    (chips.length > 1 ? `<span class="chip" data-k="all">Limpiar todo</span>` : '');
+  $('chips').querySelectorAll('.chip').forEach(c => c.onclick = () => {
+    const k = c.dataset.k; if(k==='all'){ F.cliente=F.ciudad=F.rango=F.tipo=''; F.exSI=false; } else F[k] = (k==='exSI') ? false : '';
+    syncControls(); render(); });
+}
+function buildTol(){
+  $('tolgrid').innerHTML = Object.entries(TOL).map(([k,t]) =>
+    `<label>${t.lbl}<input type="number" step="0.5" data-k="${k}" value="${t.v}"></label>`).join('') +
+    `<label style="justify-content:flex-end"><button id="tolReset">Restaurar valores por defecto</button></label>`;
+  $('tolgrid').querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => {
+    const v = parseFloat(inp.value); if(isNaN(v)) return; TOL[inp.dataset.k].v = v;
+    const o = {}; for(const k in TOL) o[k] = TOL[k].v; store.set('cartera_tol', o); renderKPIs(filtered());
+  }));
+  $('tolReset').onclick = () => { store.set('cartera_tol', {}); TOL = loadTol(); buildTol(); renderKPIs(filtered()); };
+}
+
+/* ===================== RENDER GENERAL ===================== */
+function render(){
+  const rows = filtered();
+  renderKPIs(rows);
+  renderAging(filtered('rango'));
+  renderTop(filtered('cliente'));
+  renderCity(filtered('ciudad'));
+  renderFlow(rows);
+  renderPareto(filtered('cliente'));
+  renderEvo();
+  renderTable(rows);
+}
+function loadText(text){
+  const d = parseReport(text);
+  if(!d.rows.length){ alert('No se encontraron facturas en el archivo. Verifica que sea el reporte «Estado de Cuenta 30-60-90» separado por punto y coma.'); return; }
+  DATA = d; F.cliente=F.ciudad=F.rango=F.tipo=''; F.exSI=false;
+  const c = d.corte ? fmtD(d.corte) : 's/f';
+  $('ttl').textContent = 'Estado de Cartera 30-60-90' + (d.empresa ? ' · ' + d.empresa : '');
+  $('sub').textContent = `Corte al ${c} · Valores en COP · ${nf0.format(d.rows.length)} documentos de ${new Set(d.rows.map(r=>r.cliente)).size} clientes`;
+  const tot = sum(d.rows, r=>r.valor);
+  const rb = $('recon');
+  if(d.totalGeneral != null){
+    const okR = Math.abs(tot - d.totalGeneral) < 1;
+    rb.className = 'badge' + (okR ? '' : ' bad');
+    rb.textContent = okR ? '✓ Cuadra con el Total General del reporte' : `✕ Diferencia con Total General: ${fmt$(tot - d.totalGeneral)}`;
+  } else { rb.className='badge bad'; rb.textContent='Sin fila Total General para conciliar'; }
+  buildControls(); syncControls(); render();
+}
+
+/* ===================== EVENTOS ===================== */
+$('fCliente').onchange = e => { F.cliente = e.target.value; syncControls(); render(); };
+$('fCiudad').onchange  = e => { F.ciudad  = e.target.value; syncControls(); render(); };
+$('fRango').onchange   = e => { F.rango   = e.target.value; syncControls(); render(); };
+$('fTipo').onchange    = e => { F.tipo    = e.target.value; syncControls(); render(); };
+$('fExSI').onchange    = e => { F.exSI    = e.target.checked; syncControls(); render(); };
+$('q').oninput = () => renderTable(filtered());
+document.querySelectorAll('th[data-k]').forEach(th => th.onclick = () => {
+  const k = th.dataset.k; if(sortK === k) sortDir *= -1; else { sortK = k; sortDir = ['cliente','ciudad','doc','tipo'].includes(k) ? 1 : -1; }
+  renderTable(filtered()); });
+$('file').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    let t = rd.result;
+    if(t.includes('�')){ const r2 = new FileReader(); r2.onload = () => loadText(r2.result); r2.readAsText(f, 'windows-1252'); }
+    else loadText(t);
+  };
+  rd.readAsText(f, 'utf-8'); e.target.value = '';
+};
+$('exportCsv').onclick = () => {
+  const rows = filtered();
+  const head = ['Cliente','Identificacion','Ciudad','Documento','Tipo','Fecha','Vence','Valor','Dias','Rango'];
+  const lines = [head.join(';')].concat(rows.map(r => [r.cliente, r.id, r.ciudad, r.doc, r.tipo, fmtD(r.fecha), fmtD(r.vence), r.valor.toFixed(2).replace('.',','), r.dias, BUCKETS[r.bucket].n]
+    .map(v => /[;"\n]/.test(String(v)) ? '"'+String(v).replace(/"/g,'""')+'"' : v).join(';')));
+  const blob = new Blob(['﻿'+lines.join('\r\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'cartera_tabla_plana.csv'; a.click();
+};
+$('saveCut').onclick = () => {
+  const t = cutTotals(); const hist = store.get('cartera_hist', []).filter(h => h.fecha !== t.fecha);
+  hist.push(t); store.set('cartera_hist', hist); renderEvo();
+  $('saveCut').textContent = '✓ Corte ' + t.fecha + ' guardado'; setTimeout(() => $('saveCut').textContent = 'Guardar este corte', 2200);
+};
+$('expHist').onclick = () => {
+  const blob = new Blob([JSON.stringify(store.get('cartera_hist', []), null, 2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'historico_cartera.json'; a.click();
+};
+$('impHist').onchange = e => {
+  const f = e.target.files[0]; if(!f) return; const rd = new FileReader();
+  rd.onload = () => { try{ const arr = JSON.parse(rd.result); if(Array.isArray(arr)){ const cur = store.get('cartera_hist', []);
+    arr.forEach(p => { if(p && p.fecha){ const i = cur.findIndex(c=>c.fecha===p.fecha); if(i>=0) cur[i]=p; else cur.push(p); } });
+    store.set('cartera_hist', cur); renderEvo(); } }catch(err){ alert('El archivo de histórico no es válido.'); } };
+  rd.readAsText(f); e.target.value='';
+};
+$('clrHist').onclick = () => { if(confirm('¿Borrar todos los cortes guardados en este navegador?')){ store.set('cartera_hist', []); renderEvo(); } };
+let rT; addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(render, 150); });
+$('lgTop').innerHTML = legendHTML(); $('lgCity').innerHTML = legendHTML();
+buildTol();
+
+/* ===================== INICIO ===================== */
+const embedded = $('csvData').textContent.trim();
+if(embedded && embedded !== '__CSV' + '_DATA__') loadText(embedded);
+else { $('sub').textContent = 'Carga el CSV del reporte «Estado de Cuenta 30-60-90» para ver el tablero.'; render(); }
+</script>
+</body>
+</html>
